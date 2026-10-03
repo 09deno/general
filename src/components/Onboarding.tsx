@@ -1,7 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { ArrowLeft, Minus, Plus } from 'lucide-react'
+import TargetCard from './TargetCard'
 import {
+  answersFromRow,
   calculate,
+  GOAL_LABELS,
   macros,
   maxProtein,
   MAX_KCAL,
@@ -20,12 +23,16 @@ const QUESTIONS: Step[] = ['sex', 'age', 'height', 'weight', 'activity', 'goal']
 type OnboardingProps = {
   userId: string
   onDone: (goals: GoalsRow) => void
+  // pri zmene cieľov z Nastavení: predvyplnené odpovede a návrat späť bez uloženia
+  initial?: GoalsRow
+  onCancel?: () => void
 }
 
 // Úvodné otázky po registrácii – jedna otázka na obrazovku, na konci denný cieľ.
-export default function Onboarding({ userId, onDone }: OnboardingProps) {
+// Tie isté otázky (s predvyplnenými odpoveďami) slúžia aj na zmenu cieľov.
+export default function Onboarding({ userId, onDone, initial, onCancel }: OnboardingProps) {
   const [step, setStep] = useState<Step>('sex')
-  const [answers, setAnswers] = useState<Partial<Answers>>({})
+  const [answers, setAnswers] = useState<Partial<Answers>>(() => (initial ? answersFromRow(initial) : {}))
   const index = step === 'result' ? QUESTIONS.length : QUESTIONS.indexOf(step)
 
   const answer = (values: Partial<Answers>) => {
@@ -33,7 +40,7 @@ export default function Onboarding({ userId, onDone }: OnboardingProps) {
     setStep(index + 1 < QUESTIONS.length ? QUESTIONS[index + 1] : 'result')
   }
 
-  const back = () => setStep(QUESTIONS[index - 1])
+  const back = () => (index === 0 ? onCancel?.() : setStep(QUESTIONS[index - 1]))
 
   return (
     <div className="flow">
@@ -43,7 +50,7 @@ export default function Onboarding({ userId, onDone }: OnboardingProps) {
           className="flow__back"
           onClick={back}
           aria-label="Späť"
-          style={{ visibility: index === 0 ? 'hidden' : 'visible' }}
+          style={{ visibility: index === 0 && !onCancel ? 'hidden' : 'visible' }}
         >
           <ArrowLeft size={24} aria-hidden="true" />
         </button>
@@ -116,10 +123,10 @@ export default function Onboarding({ userId, onDone }: OnboardingProps) {
         <ChoiceStep<Goal>
           title="Čo chceš dosiahnuť?"
           options={[
-            { value: 'lose', label: 'Schudnúť', hint: 'Zhodiť tuk a pár kíl.' },
-            { value: 'recomp', label: 'Spevniť postavu', hint: 'Menej tuku, viac svalov, váha zhruba rovnaká.' },
-            { value: 'maintain', label: 'Udržať váhu', hint: 'Ostať tak, ako som.' },
-            { value: 'gain', label: 'Nabrať svaly', hint: 'Pribrať svaly, aj keď váha trochu stúpne.' },
+            { value: 'lose', label: GOAL_LABELS.lose, hint: 'Zhodiť tuk a pár kíl.' },
+            { value: 'recomp', label: GOAL_LABELS.recomp, hint: 'Menej tuku, viac svalov, váha zhruba rovnaká.' },
+            { value: 'maintain', label: GOAL_LABELS.maintain, hint: 'Ostať tak, ako som.' },
+            { value: 'gain', label: GOAL_LABELS.gain, hint: 'Pribrať svaly, aj keď váha trochu stúpne.' },
           ]}
           selected={answers.goal}
           onPick={(goal) => answer({ goal })}
@@ -127,7 +134,13 @@ export default function Onboarding({ userId, onDone }: OnboardingProps) {
       )}
       {step === 'result' && (
         // pri zmene odpovedí sa výsledok aj ručné úpravy prepočítajú nanovo
-        <Result key={JSON.stringify(answers)} userId={userId} answers={answers as Answers} onDone={onDone} />
+        <Result
+          key={JSON.stringify(answers)}
+          userId={userId}
+          answers={answers as Answers}
+          saveLabel={initial ? 'Uložiť' : 'Začať'}
+          onDone={onDone}
+        />
       )}
     </div>
   )
@@ -233,7 +246,13 @@ const EXPLANATION: Record<Goal, string> = {
   gain: 'Keď zješ o trochu viac a trénuješ, budeš naberať svaly.',
 }
 
-function Result({ userId, answers, onDone }: { userId: string; answers: Answers; onDone: (goals: GoalsRow) => void }) {
+function Result(props: {
+  userId: string
+  answers: Answers
+  saveLabel: string
+  onDone: (goals: GoalsRow) => void
+}) {
+  const { userId, answers, saveLabel, onDone } = props
   const result = calculate(answers)
   const [kcal, setKcal] = useState(result.kcal)
   const [protein, setProtein] = useState(result.proteinG)
@@ -266,17 +285,7 @@ function Result({ userId, answers, onDone }: { userId: string; answers: Answers;
         <h1 className="flow__title">Tvoj denný cieľ</h1>
       </header>
 
-      <div className="card card--glow target">
-        <span className="target__label">Denne zjedz</span>
-        <p className="target__kcal">
-          {targets.kcal.toLocaleString('sk')} <span>kcal</span>
-        </p>
-        <div className="macros">
-          <Macro kind="protein" label="Bielkoviny" grams={targets.proteinG} />
-          <Macro kind="carbs" label="Sacharidy" grams={targets.carbsG} />
-          <Macro kind="fat" label="Tuky" grams={targets.fatG} />
-        </div>
-      </div>
+      <TargetCard targets={targets} />
 
       <div className="explain">
         <p>
@@ -323,19 +332,10 @@ function Result({ userId, answers, onDone }: { userId: string; answers: Answers;
           </p>
         )}
         <button type="button" className="button button--primary" onClick={finish} disabled={busy}>
-          {busy ? 'Ukladám…' : 'Začať'}
+          {busy ? 'Ukladám…' : saveLabel}
         </button>
       </div>
     </>
-  )
-}
-
-function Macro({ kind, label, grams }: { kind: 'protein' | 'carbs' | 'fat'; label: string; grams: number }) {
-  return (
-    <div className={`macro macro--${kind}`}>
-      <span className="macro__value">{grams} g</span>
-      <span className="macro__label">{label}</span>
-    </div>
   )
 }
 

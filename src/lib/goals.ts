@@ -29,6 +29,13 @@ export type GoalsRow = {
   fat_g: number
 }
 
+export const GOAL_LABELS: Record<Goal, string> = {
+  lose: 'Schudnúť',
+  recomp: 'Spevniť postavu',
+  maintain: 'Udržať váhu',
+  gain: 'Nabrať svaly',
+}
+
 // koľkokrát viac kalórií spáli za deň, než v pokoji – podľa toho, ako často športuje
 const ACTIVITY_FACTOR: Record<Activity, number> = { none: 1.2, low: 1.375, medium: 1.55, high: 1.725 }
 // o koľko zje menej / viac, než denne spáli
@@ -69,6 +76,22 @@ export function macros(kcal: number, protein: number): Targets {
 // bielkovín najviac toľko, aby ostalo aj na sacharidy
 export function maxProtein(kcal: number) {
   return Math.floor((kcal * MAX_PROTEIN_SHARE) / 4 / 5) * 5
+}
+
+// uložené odpovede späť do otázok (pri zmene cieľov)
+export function answersFromRow(row: GoalsRow): Answers {
+  return {
+    sex: row.sex,
+    age: new Date().getFullYear() - row.birth_year,
+    heightCm: row.height_cm,
+    weightKg: row.weight_kg,
+    activity: row.activity,
+    goal: row.goal,
+  }
+}
+
+export function targetsFromRow(row: GoalsRow): Targets {
+  return { kcal: row.kcal, proteinG: row.protein_g, carbsG: row.carbs_g, fatG: row.fat_g }
 }
 
 export async function loadGoals(userId: string): Promise<GoalsRow | null> {
