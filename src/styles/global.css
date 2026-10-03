@@ -634,6 +634,20 @@ a {
   font-size: 13px;
 }
 
+/* jedným ťuknutím pridať – oranžové plus ako pri „Pridať“ */
+.result__add {
+  flex: none;
+  padding: 6px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #fff;
+  box-sizing: content-box;
+}
+
+.result:disabled {
+  opacity: 0.6;
+}
+
 /* prísady k jedlu */
 .extras {
   display: grid;

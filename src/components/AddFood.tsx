@@ -1,8 +1,19 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight, Plus, Search, X } from 'lucide-react'
-import { findFood, nutrition, searchFoods, type Food, type Menu } from '../data/foods'
-import { addEntry, dayLabel, mealForNow, MEALS, parseDay, today, type Meal, type NewFoodEntry } from '../lib/food'
+import { findFood, matchesQuery, nutrition, searchFoods, type Food, type Menu } from '../data/foods'
+import {
+  addEntry,
+  dayLabel,
+  loadHistory,
+  mealForNow,
+  MEALS,
+  parseDay,
+  today,
+  type HistoryItem,
+  type Meal,
+  type NewFoodEntry,
+} from '../lib/food'
 
 // prázdne políčko = 0, čiarka aj bodka ako desatinná čiarka
 const parseNumber = (text: string) => (text.trim() === '' ? 0 : Number(text.trim().replace(',', '.')))
@@ -66,6 +77,20 @@ export default function AddFood() {
   const [manual, setManual] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  // tvoje jedlá z histórie – najčastejšie sa pridajú jedným ťuknutím
+  const [history, setHistory] = useState<HistoryItem[]>([])
+
+  useEffect(() => {
+    let active = true
+    loadHistory()
+      .then((items) => active && setHistory(items))
+      .catch(() => {
+        // bez histórie sa dá jedlo stále vyhľadať
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const close = () => navigate(day === today() ? '/jedlo' : `/jedlo?den=${day}`, { replace: true })
 
@@ -96,6 +121,18 @@ export default function AddFood() {
   const menu = base?.food.menu
   // všetky časti jedla: základ, pri menu príloha, nápoj a omáčky, potom prísady navyše
   const dish = base ? [base, ...(menu ? menuParts(menu, choice) : []), ...extras] : []
+
+  // jedným ťuknutím: rovnaké jedlo a množstvo ako minule
+  const quickAdd = (item: HistoryItem) =>
+    save({
+      name: item.name,
+      kcal: item.kcal,
+      protein_g: item.protein_g,
+      carbs_g: item.carbs_g,
+      fat_g: item.fat_g,
+      grams: item.grams,
+      unit: item.unit,
+    })
 
   const saveDish = () => {
     const parts = dish
@@ -239,10 +276,18 @@ export default function AddFood() {
           <ManualForm busy={busy} error={error} onError={setError} onSave={save} />
         ) : (
           <>
+            {error && (
+              <p className="flow__message flow__message--error" role="alert">
+                {error}
+              </p>
+            )}
             <FoodSearch
               placeholder="Hľadaj, napr. ryža, vajce, guláš"
               hint="Napíš názov potraviny alebo jedla. Sú tu aj varené jedlá z jedálne či reštaurácie – napr. guláš, rezeň, pizza, kebab. Po výbere môžeš pridať aj prísady."
               places
+              history={history}
+              busy={busy}
+              onQuickAdd={quickAdd}
               onPick={(food) => {
                 setBase({ food, grams: defaultAmount(food) })
                 setChoice(DEFAULT_CHOICE)
@@ -261,9 +306,44 @@ export default function AddFood() {
 // podniky v Banskej Bystrici, kam chodí partia – ťuknutím sa ukážu ich jedlá
 const PLACES = ['Wakaka', 'KFC', "McDonald's", 'Leviathan']
 
-function FoodSearch(props: { placeholder: string; hint?: string; places?: boolean; onPick: (food: Food) => void }) {
+function FoodSearch(props: {
+  placeholder: string
+  hint?: string
+  places?: boolean
+  history?: HistoryItem[]
+  busy?: boolean
+  onQuickAdd?: (item: HistoryItem) => void
+  onPick: (food: Food) => void
+}) {
   const [query, setQuery] = useState('')
   const results = searchFoods(query)
+  const history = props.history ?? []
+  const mine = history.filter((item) => matchesQuery(item.name, query)).slice(0, 5)
+
+  const historyList = (items: HistoryItem[]) => (
+    <ul className="results">
+      {items.map((item) => (
+        <li key={item.name}>
+          <button
+            type="button"
+            className="result"
+            disabled={props.busy}
+            onClick={() => props.onQuickAdd?.(item)}
+            aria-label={`Pridať ${item.name}`}
+          >
+            <span className="result__text">
+              <span className="result__name">{item.name}</span>
+              <span className="result__info">
+                {item.grams ? `${amount(Number(item.grams))} ${item.unit} · ` : ''}
+                {item.kcal.toLocaleString('sk')} kcal
+              </span>
+            </span>
+            <Plus className="result__add" size={22} aria-hidden="true" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
 
   return (
     <>
@@ -283,6 +363,12 @@ function FoodSearch(props: { placeholder: string; hint?: string; places?: boolea
 
       {query.trim() === '' ? (
         <>
+          {history.length > 0 && (
+            <div className="add-food__group">
+              <span className="add-food__label">Často ješ – pridáš jedným ťuknutím</span>
+              {historyList(history.slice(0, 6))}
+            </div>
+          )}
           {props.hint && <p className="search__hint">{props.hint}</p>}
           {props.places && (
             <div className="add-food__group">
@@ -297,38 +383,48 @@ function FoodSearch(props: { placeholder: string; hint?: string; places?: boolea
             </div>
           )}
         </>
-      ) : results.length === 0 ? (
+      ) : results.length === 0 && mine.length === 0 ? (
         <p className="search__hint">Nič sa nenašlo. Skús iné slovo.</p>
       ) : (
-        <ul className="results">
-          {results.map((item) => (
-            <li key={item.name}>
-              <button type="button" className="result" onClick={() => props.onPick(item)}>
-                <span className="result__text">
-                  <span className="result__name">{item.name}</span>
-                  <span className="result__info">
-                    {/* kalórie pre bežnú porciu – začiatočník lepšie pozná „1 porcia“ než 100 g */}
-                    {item.menu
-                      ? `bežné menu · ${total([{ food: item, grams: defaultAmount(item) }, ...menuParts(item.menu, DEFAULT_CHOICE)]).kcal.toLocaleString('sk')} kcal`
-                      : item.portions[0]
-                        ? `${item.portions[0].label} (${item.portions[0].grams} ${item.unit}) · ${nutrition(item, item.portions[0].grams).kcal} kcal`
-                        : `100 ${item.unit} · ${item.kcal} kcal`}
-                  </span>
-                </span>
-                <ChevronRight size={20} aria-hidden="true" />
-              </button>
-            </li>
-          ))}
-        </ul>
+        <>
+          {mine.length > 0 && (
+            <div className="add-food__group">
+              <span className="add-food__label">Tvoje jedlá – jedným ťuknutím</span>
+              {historyList(mine)}
+            </div>
+          )}
+          {results.length > 0 && (
+            <ul className="results">
+              {results.map((item) => (
+                <li key={item.name}>
+                  <button type="button" className="result" onClick={() => props.onPick(item)}>
+                    <span className="result__text">
+                      <span className="result__name">{item.name}</span>
+                      <span className="result__info">
+                        {/* kalórie pre bežnú porciu – začiatočník lepšie pozná „1 porcia“ než 100 g */}
+                        {item.menu
+                          ? `bežné menu · ${total([{ food: item, grams: defaultAmount(item) }, ...menuParts(item.menu, DEFAULT_CHOICE)]).kcal.toLocaleString('sk')} kcal`
+                          : item.portions[0]
+                            ? `${item.portions[0].label} (${item.portions[0].grams} ${item.unit}) · ${nutrition(item, item.portions[0].grams).kcal} kcal`
+                            : `100 ${item.unit} · ${item.kcal} kcal`}
+                      </span>
+                    </span>
+                    <ChevronRight size={20} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
     </>
   )
 }
 
-// Menu: veľkosť, nápoj a omáčky ťuknutím; predvolené je bežné menu s prvým nápojom.
 // zmena vždy z aktuálneho výberu, aby sa nestratilo ani rýchle ťuknutie za ťuknutím
 type MenuUpdate = (update: (choice: MenuChoice) => MenuChoice) => void
 
+// Menu: veľkosť, nápoj a omáčky ťuknutím; predvolené je bežné menu s prvým nápojom.
 function MenuPicker({ menu, choice, onChange }: { menu: Menu; choice: MenuChoice; onChange: MenuUpdate }) {
   const toggleSauce = (index: number) =>
     onChange((current) => ({
