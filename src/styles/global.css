@@ -1,0 +1,231 @@
+/* ---------- Farby a písmo (svetlý režim) ---------- */
+:root {
+  color-scheme: light dark;
+
+  --font-body: 'Barlow', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+
+  --volt: #d2ff3c;
+  --ember: #ff5a1f;
+
+  --backdrop: #e6e6df;
+  --bg: #f3f3ee;
+  --surface: #ffffff;
+  --border: #dadad0;
+  --text: #121315;
+  --text-muted: #5c6167;
+  --accent: var(--volt);
+  --on-accent: #121315;
+  --accent-ink: #4c6b00; /* akcentová farba pre text na svetlom pozadí */
+
+  --nav-height: 72px;
+  --radius: 18px;
+  --column: 480px;
+}
+
+/* ---------- Tmavý režim ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --backdrop: #08090a;
+    --bg: #0f1012;
+    --surface: #1a1c1f;
+    --border: #2b2f34;
+    --text: #f3f4ef;
+    --text-muted: #9ba1a7;
+    --on-accent: #0f1012;
+    --accent-ink: var(--volt);
+  }
+}
+
+/* ---------- Základ ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+/* ---------- Stĺpec appky (na počítači v strede) ---------- */
+.app {
+  max-width: var(--column);
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--bg);
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 560px) {
+  body {
+    background: var(--backdrop);
+  }
+
+  .app {
+    border-inline: 1px solid var(--border);
+  }
+}
+
+/* ---------- Obrazovka sekcie ---------- */
+.screen {
+  padding: 24px 16px 32px;
+}
+
+.screen__header {
+  margin-bottom: 28px;
+}
+
+.brand-tag {
+  display: inline-block;
+  padding: 4px 16px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+.screen__title {
+  margin: 14px 0 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 60px;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+/* ---------- Dočasná karta „Pripravujeme“ ---------- */
+.placeholder {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* šikmé pruhy ako na športovej páske */
+.placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  background: repeating-linear-gradient(-45deg, var(--accent) 0 8px, transparent 8px 16px);
+}
+
+.placeholder__badge {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.placeholder__text {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+}
+
+/* ---------- Spodná navigácia ---------- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  max-width: var(--column);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  transform: translateX(-50%);
+}
+
+.bottom-nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: var(--nav-height);
+  color: var(--text-muted);
+  text-decoration: none;
+  user-select: none;
+}
+
+.bottom-nav__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 32px;
+}
+
+/* šikmá limetková „visačka“ pod ikonou aktívnej záložky */
+.bottom-nav__icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  opacity: 0;
+  transform: scaleX(0.5);
+  transition:
+    opacity 0.15s ease,
+    transform 0.2s ease;
+}
+
+.bottom-nav__icon svg {
+  position: relative;
+}
+
+.bottom-nav__label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bottom-nav__link.active {
+  color: var(--text);
+}
+
+.bottom-nav__link.active .bottom-nav__icon {
+  color: var(--on-accent);
+}
+
+.bottom-nav__link.active .bottom-nav__icon::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav__icon::before {
+    transition: none;
+  }
+}
