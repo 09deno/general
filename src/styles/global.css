@@ -25,6 +25,7 @@
   --glow-label: #b49cff;
   --glow-border: rgba(139, 92, 246, 0.35);
   --glow: rgba(124, 58, 237, 0.7);
+  --glow-soft-bg: rgba(124, 58, 237, 0.32); /* jemnejšia žiara na svetlom pozadí */
 
   --nav-height: 72px;
   --radius: 24px;
@@ -48,6 +49,7 @@
     --nav-active: #b49cff;
 
     --glow: rgba(124, 58, 237, 0.62);
+    --glow-soft-bg: var(--glow);
   }
 }
 
@@ -61,17 +63,38 @@
 html,
 body {
   margin: 0;
+  background: var(--bg);
+  /* žiadne „preťahovanie“ celej stránky ako na webe */
+  overscroll-behavior: none;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   min-height: 100dvh;
-  background: var(--bg);
   color: var(--text);
   font-family: var(--font);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* iPhone priblíži obraz pri ťuknutí do políčka s písmom menším ako 16 px */
+input,
+select,
+textarea {
+  font-size: max(16px, 1em);
+}
+
+/* tlačidlá sa pri podržaní neoznačujú ako text a neotvárajú menu */
+button,
+a {
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 :focus-visible {
@@ -101,7 +124,7 @@ body {
 
 /* ---------- Obrazovka sekcie ---------- */
 .screen {
-  padding: 24px 16px 32px;
+  padding: calc(24px + env(safe-area-inset-top)) 16px 32px;
 }
 
 .screen__header {
@@ -223,6 +246,137 @@ body {
   border-radius: 50%;
   background: var(--nav-active);
   box-shadow: 0 0 8px var(--violet);
+}
+
+/* ---------- Tlačidlá ---------- */
+.button {
+  height: 56px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* hlavná akcia – oranžová */
+.button--primary {
+  color: #fff;
+  background: linear-gradient(90deg, #ff7a2f, #ff4d2e);
+  box-shadow: 0 10px 30px -12px rgba(255, 90, 40, 0.7);
+}
+
+.button--ghost {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+/* ---------- Návod na pridanie na plochu ---------- */
+.install {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: var(--column);
+  margin: 0 auto;
+  padding: calc(28px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background:
+    radial-gradient(90% 35% at 50% 108%, var(--glow-soft-bg), transparent 70%),
+    var(--bg);
+}
+
+.install__icon {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.45);
+}
+
+.install__title {
+  margin: 18px 0 6px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.install__lead {
+  margin: 0 0 18px;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-muted);
+}
+
+.install__note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.install__actions {
+  display: grid;
+  gap: 10px;
+}
+
+.steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  counter-reset: step;
+}
+
+.steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step);
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--violet);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+}
+
+.steps b {
+  font-weight: 600;
+}
+
+.steps__icon {
+  width: 20px;
+  height: 20px;
+  margin: 0 2px;
+  vertical-align: -4px;
+  color: var(--nav-active);
+}
+
+.steps__hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
