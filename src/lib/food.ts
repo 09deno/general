@@ -27,6 +27,9 @@ export type FoodEntry = {
 
 export type NewFoodEntry = Omit<FoodEntry, 'id'> & { day: string }
 
+// jedlo z histórie – hodnoty z posledného zápisu a koľkokrát ho človek zjedol
+export type HistoryItem = Omit<FoodEntry, 'id' | 'meal'> & { count: number }
+
 const ZONE = 'Europe/Bratislava'
 
 // dnešný deň na Slovensku ako „2026-10-03“
@@ -88,6 +91,26 @@ export async function loadEntries(day: string): Promise<FoodEntry[]> {
     .order('created_at')
   if (error) throw error
   return data
+}
+
+// Tvoje jedlá z posledných 60 dní: najčastejšie navrchu, hodnoty z posledného zápisu.
+// Takto si appka pamätá aj jedlá zadané ručne.
+export async function loadHistory(): Promise<HistoryItem[]> {
+  const { data, error } = await supabase
+    .from('food_entries')
+    .select('name, kcal, protein_g, carbs_g, fat_g, grams, unit')
+    .gte('day', shiftDay(today(), -60))
+    .order('created_at', { ascending: false })
+    .limit(500)
+  if (error) throw error
+  const byName = new Map<string, HistoryItem>()
+  for (const row of data) {
+    const item = byName.get(row.name)
+    if (item) item.count += 1
+    else byName.set(row.name, { ...row, count: 1 })
+  }
+  // pri rovnakom počte ostáva poradie od posledného
+  return [...byName.values()].sort((a, b) => b.count - a.count)
 }
 
 export async function addEntry(entry: NewFoodEntry) {

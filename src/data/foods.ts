@@ -16,6 +16,8 @@ export type Food = {
   aliases: string
   // menu (napr. Big Mac menu): k hlavnému jedlu sa vyberá príloha, nápoj a omáčky
   menu?: Menu
+  // len súčasť menu (omáčky podnikov) – vo vyhľadávaní sa neukazuje
+  hidden?: boolean
 }
 
 export type MenuPart = { label: string; food: string; grams: number }
@@ -26,7 +28,7 @@ export type Menu = {
   sauces: MenuPart[]
 }
 
-type Extra = { unit?: 'ml'; aliases?: string }
+type Extra = { unit?: 'ml'; aliases?: string; hidden?: boolean }
 
 function food(
   name: string,
@@ -46,6 +48,7 @@ function food(
     portions: portions.map(([label, grams]) => ({ label, grams })),
     unit: extra.unit ?? 'g',
     aliases: extra.aliases ?? '',
+    hidden: extra.hidden,
   }
 }
 
@@ -437,12 +440,12 @@ const BASE: Food[] = [
       portions: [['0,25 l', 250], ['0,4 l', 400], ['0,5 l', 500]],
     }),
   ),
-  piece("McDonald's kečup", 12, 14, 0.2, 3.1, 0, { label: '1 porcia', aliases: 'mcdonalds mekac omacka kecup' }),
-  piece("McDonald's sladkokyslá omáčka", 30, 42, 0.1, 9.7, 0.3, { label: '1 porcia', aliases: 'mcdonalds mekac omacka' }),
-  piece("McDonald's BBQ omáčka", 30, 47, 0.2, 10, 0.4, { label: '1 porcia', aliases: 'mcdonalds mekac omacka barbecue' }),
-  piece("McDonald's cesnaková omáčka", 20, 75, 0, 2, 8, { label: '1 porcia', aliases: 'mcdonalds mekac omacka' }),
-  piece("McDonald's kari omáčka", 30, 39, 0.2, 8.6, 0.3, { label: '1 porcia', aliases: 'mcdonalds mekac omacka curry' }),
-  piece("McDonald's horčicová omáčka", 30, 54, 0.5, 6.4, 3, { label: '1 porcia', aliases: 'mcdonalds mekac omacka' }),
+  piece("McDonald's kečup", 12, 14, 0.2, 3.1, 0, { label: '1 porcia', hidden: true, aliases: 'mcdonalds mekac omacka kecup' }),
+  piece("McDonald's sladkokyslá omáčka", 30, 42, 0.1, 9.7, 0.3, { label: '1 porcia', hidden: true, aliases: 'mcdonalds mekac omacka' }),
+  piece("McDonald's BBQ omáčka", 30, 47, 0.2, 10, 0.4, { label: '1 porcia', hidden: true, aliases: 'mcdonalds mekac omacka barbecue' }),
+  piece("McDonald's cesnaková omáčka", 20, 75, 0, 2, 8, { label: '1 porcia', hidden: true, aliases: 'mcdonalds mekac omacka' }),
+  piece("McDonald's kari omáčka", 30, 39, 0.2, 8.6, 0.3, { label: '1 porcia', hidden: true, aliases: 'mcdonalds mekac omacka curry' }),
+  piece("McDonald's horčicová omáčka", 30, 54, 0.5, 6.4, 3, { label: '1 porcia', hidden: true, aliases: 'mcdonalds mekac omacka' }),
 
   // KFC: oficiálna tabuľka nutričných hodnôt KFC (AmRest, 2020); menu sa časom mení.
   piece('KFC Original kúsok – stehno', 111, 301, 22, 9.3, 20, { aliases: 'kfc kura kuracie' }),
@@ -488,12 +491,12 @@ const BASE: Food[] = [
       portions: [['0,3 l', 300], ['0,4 l', 400], ['0,5 l', 500]],
     }),
   ),
-  piece('KFC kečup', 25, 37, 0.6, 8.7, 0, { label: '1 porcia', aliases: 'kfc omacka kecup' }),
-  piece('KFC BBQ omáčka', 25, 26, 0.4, 5.8, 0.1, { label: '1 porcia', aliases: 'kfc omacka barbecue' }),
-  piece('KFC cesnaková omáčka', 25, 125, 0.6, 1.8, 12.8, { label: '1 porcia', aliases: 'kfc omacka majonéza' }),
-  piece('KFC tatárska omáčka', 25, 98, 0.1, 1.6, 10.3, { label: '1 porcia', aliases: 'kfc omacka' }),
-  piece('KFC Orient omáčka', 25, 43, 0.2, 10.5, 0, { label: '1 porcia', aliases: 'kfc omacka' }),
-  piece('KFC Golden omáčka', 25, 108, 0.2, 6.5, 9, { label: '1 porcia', aliases: 'kfc omacka' }),
+  piece('KFC kečup', 25, 37, 0.6, 8.7, 0, { label: '1 porcia', hidden: true, aliases: 'kfc omacka kecup' }),
+  piece('KFC BBQ omáčka', 25, 26, 0.4, 5.8, 0.1, { label: '1 porcia', hidden: true, aliases: 'kfc omacka barbecue' }),
+  piece('KFC cesnaková omáčka', 25, 125, 0.6, 1.8, 12.8, { label: '1 porcia', hidden: true, aliases: 'kfc omacka majonéza' }),
+  piece('KFC tatárska omáčka', 25, 98, 0.1, 1.6, 10.3, { label: '1 porcia', hidden: true, aliases: 'kfc omacka' }),
+  piece('KFC Orient omáčka', 25, 43, 0.2, 10.5, 0, { label: '1 porcia', hidden: true, aliases: 'kfc omacka' }),
+  piece('KFC Golden omáčka', 25, 108, 0.2, 6.5, 9, { label: '1 porcia', hidden: true, aliases: 'kfc omacka' }),
 
   // Leviathan (špagety, Europa SC): kalórie na porciu zo stránky leviathan.sk; bielkoviny, sacharidy
   // a tuky sú odhad podľa zloženia omáčky. Porcie 400 / 600 / 800 g.
@@ -658,7 +661,7 @@ const plain = (text: string) =>
     .replace(/\p{M}/gu, '')
     .toLowerCase()
 
-const INDEX = FOODS.map((item) => {
+const INDEX = FOODS.filter((item) => !item.hidden).map((item) => {
   const all = plain(`${item.name} ${item.aliases}`)
   return { item, name: plain(item.name), all, parts: all.split(/[^a-z0-9]+/) }
 })
@@ -674,6 +677,13 @@ export function searchFoods(query: string, limit = 40): Food[] {
     .sort((a, b) => Number(b.name.startsWith(words[0])) - Number(a.name.startsWith(words[0])))
     .slice(0, limit)
     .map((entry) => entry.item)
+}
+
+// či text obsahuje všetky napísané slová (bez diakritiky) – napr. pre tvoje vlastné jedlá
+export function matchesQuery(text: string, query: string) {
+  const words = plain(query).split(/\s+/).filter(Boolean)
+  const normalized = plain(text)
+  return words.length > 0 && words.every((word) => normalized.includes(word))
 }
 
 // hodnoty pre zvolené množstvo
