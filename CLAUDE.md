@@ -57,6 +57,11 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - Jednotky kg a cm, týždeň začína pondelkom, čas Europe/Bratislava.
 
 ### Jedlo
+- Deň sa delí na **Raňajky / Desiata / Obed / Olovrant / Večera**. Pri pridaní appka jedlo **predvyberie podľa času** (do 10:00 raňajky, do 11:30 desiata, do 14:30 obed, do 17:00 olovrant, potom večera), dá sa jedným ťuknutím zmeniť (obed býva aj o 11 či o 15).
+- Hlavná karta: veľké „Zostáva X kcal“, pruh zjedeného a bielkoviny / sacharidy / tuky „zjedené / cieľ“. Pri prekročení **pokojne** „Nad cieľom o X kcal“ oranžovou (rozhodol majiteľ).
+- Prepínanie dní šípkami (spätný zápis áno, do budúcnosti nie); deň je v adrese `/jedlo?den=YYYY-MM-DD`. Zoznam podľa jedál so súčtom; mazanie ikonou koša s potvrdením „Zmazať? / Nie“.
+- Uloženie: tabuľka `food_entries` (deň podľa Europe/Bratislava), každý vidí, pridáva a maže len svoje.
+- Fáza 4 po krokoch: 4.1 obrazovka + ručné pridanie → 4.2 vyhľadávanie ~100 bežných potravín s gramami → 4.3 vlastné a najčastejšie jedlá → 4.4 skenovanie čiarového kódu.
 - Sledujeme **kcal, bielkoviny, sacharidy aj tuky**. Výrazne zobrazovať „Zostáva X kcal“ (aby každý vedel, koľko si ešte môže dovoliť). Cukor a soľ zvlášť nesledujeme.
 - Zdroje potravín: skenovanie čiarových kódov kamerou + bezplatná databáza **Open Food Facts**, vlastný zoznam ~100 bežných nebalených potravín (orientačné hodnoty z verejných tabuliek), čo sa nenájde, zadá sa raz ručne a appka si to zapamätá.
 - Hodnoty na 100 g → množstvo v gramoch, s rýchlymi tlačidlami („1 ks“, „1 porcia“, „100 g“).
@@ -89,6 +94,10 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 3.2 Nastavenia: karta s denným cieľom a tlačidlo „Zmeniť ciele“ – tie isté otázky s predvyplnenými odpoveďami, šípka späť na prvej otázke zruší zmenu, na konci „Uložiť“ (PR #8)
   - [x] 3.3 „Chcem to rozpísať“ pri otázke o športe – fitko, iný šport a práca zvlášť (PR #9)
 - [ ] Fáza 4 – Jedlo
+  - [x] 4.1 Obrazovka Jedlo („Zostáva X kcal“, makroživiny, dni, zoznam podľa jedál, mazanie) a ručné pridanie jedla (PR #10)
+  - [ ] 4.2 Vyhľadávanie ~100 bežných potravín, gramy a rýchle tlačidlá („1 ks“, „1 porcia“, „100 g“)
+  - [ ] 4.3 Vlastné jedlá a najčastejšie jedlá jedným ťuknutím
+  - [ ] 4.4 Skenovanie čiarového kódu + Open Food Facts
 - [ ] Fáza 5 – Tréning
 - [ ] Fáza 6 – Progres a grafy
 - [ ] Fáza 7 – Nastavenia, doladenie, prípadne sociálne funkcie (otázka, čo majú kamaráti navzájom vidieť – len sa spýtať, nestavať)

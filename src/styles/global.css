@@ -216,6 +216,345 @@ a {
   color: var(--text-muted);
 }
 
+/* ---------- Jedlo ---------- */
+.day-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -6px 0 12px;
+}
+
+.day-switch__label {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.day-switch__button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.day-switch__button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.remaining {
+  padding: 20px 20px 22px;
+}
+
+.remaining__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--glow-label);
+}
+
+.remaining__label--over,
+.remaining__kcal--over {
+  color: var(--orange);
+}
+
+.remaining__kcal {
+  margin: 4px 0 12px;
+  font-size: 56px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.remaining__kcal span {
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--glow-soft);
+}
+
+.remaining__eaten {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--glow-soft);
+}
+
+.bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b5cf6, #b49cff);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
+  transition: width 0.3s ease;
+}
+
+.bar--thin {
+  height: 4px;
+}
+
+.bar--thin span {
+  background: var(--macro-color);
+  box-shadow: none;
+}
+
+.macro-progress {
+  display: grid;
+  gap: 4px;
+}
+
+.macro-progress__label {
+  font-size: 12px;
+  color: var(--glow-soft);
+}
+
+.macro-progress__value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.food__add {
+  width: 100%;
+  margin: 16px 0 8px;
+}
+
+.food__notice {
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.food__notice p {
+  margin: 0;
+}
+
+.food__notice--error {
+  color: var(--danger);
+}
+
+.food__empty {
+  margin: 24px 0;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.meal {
+  margin-top: 18px;
+}
+
+.meal__heading {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 4px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.meal__list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--border);
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 60px;
+  padding: 8px 6px 8px 16px;
+  background: var(--surface);
+}
+
+.entry__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.entry__name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry__macros {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.entry__kcal {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.entry__delete {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.entry__question {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.entry__confirm,
+.entry__cancel {
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.entry__confirm {
+  background: var(--danger);
+  color: #fff;
+}
+
+.entry__cancel {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---------- Pridať jedlo ---------- */
+.add-food__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-food__header .flow__back {
+  flex: none;
+  margin: 0 0 0 -10px;
+}
+
+.add-food__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.add-food__day {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.add-food {
+  display: grid;
+  gap: 18px;
+}
+
+.add-food__group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.add-food__label {
+  padding: 0;
+  margin-left: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.add-food__kcal {
+  height: 64px;
+  font-size: 28px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.chip--selected {
+  border-color: var(--violet);
+  background: var(--violet);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+}
+
+.macro-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.macro-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.macro-field__label {
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.macro-field__input {
+  height: 52px;
+  padding: 0 28px 0 12px;
+  font-size: 18px;
+}
+
+.macro-field .number-field__unit {
+  right: 12px;
+}
+
 /* ---------- Spodná navigácia ---------- */
 .bottom-nav {
   position: fixed;
@@ -280,12 +619,17 @@ a {
 
 /* ---------- Tlačidlá ---------- */
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   height: 56px;
   padding: 0 20px;
   border: 0;
   border-radius: 18px;
   font: inherit;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -860,7 +1204,8 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .bottom-nav__icon,
-  .pin__dot {
+  .pin__dot,
+  .bar span {
     transition: none;
   }
 }
