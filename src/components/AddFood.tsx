@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Plus, Search, X } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Plus, ScanBarcode, Search, X } from 'lucide-react'
 import { findFood, matchesQuery, nutrition, searchFoods, type Food, type Menu } from '../data/foods'
 import {
   addEntry,
@@ -14,6 +14,8 @@ import {
   type Meal,
   type NewFoodEntry,
 } from '../lib/food'
+import { findProduct, saveProduct } from '../lib/products'
+import BarcodeScanner from './BarcodeScanner'
 
 // prázdne políčko = 0, čiarka aj bodka ako desatinná čiarka
 const parseNumber = (text: string) => (text.trim() === '' ? 0 : Number(text.trim().replace(',', '.')))
@@ -79,6 +81,9 @@ export default function AddFood() {
   const [busy, setBusy] = useState(false)
   // tvoje jedlá z histórie – najčastejšie sa pridajú jedným ťuknutím
   const [history, setHistory] = useState<HistoryItem[]>([])
+  // čiarový kód: skenovanie, hľadanie výrobku, alebo neznámy výrobok na zadanie z obalu
+  const [scanning, setScanning] = useState(false)
+  const [lookup, setLookup] = useState<{ code: string; status: 'loading' | 'unknown' | 'error'; name?: string } | null>(null)
 
   useEffect(() => {
     let active = true
@@ -97,7 +102,8 @@ export default function AddFood() {
   // šípka späť vždy o jeden krok: prísada → jedlo → vyhľadávanie → Jedlo
   const back = () => {
     setError('')
-    if (adding && adding !== 'search') setAdding('search')
+    if (lookup) setLookup(null)
+    else if (adding && adding !== 'search') setAdding('search')
     else if (adding === 'search') setAdding(null)
     else if (base) {
       setBase(null)
@@ -121,6 +127,26 @@ export default function AddFood() {
   const menu = base?.food.menu
   // všetky časti jedla: základ, pri menu príloha, nápoj a omáčky, potom prísady navyše
   const dish = base ? [base, ...(menu ? menuParts(menu, choice) : []), ...extras] : []
+
+  const pick = (food: Food) => {
+    setBase({ food, grams: defaultAmount(food) })
+    setChoice(DEFAULT_CHOICE)
+  }
+
+  const scanned = async (code: string) => {
+    setScanning(false)
+    setError('')
+    setLookup({ code, status: 'loading' })
+    try {
+      const result = await findProduct(code)
+      if ('food' in result) {
+        setLookup(null)
+        pick(result.food)
+      } else setLookup({ code, status: 'unknown', name: result.name })
+    } catch {
+      setLookup({ code, status: 'error' })
+    }
+  }
 
   // jedným ťuknutím: rovnaké jedlo a množstvo ako minule
   const quickAdd = (item: HistoryItem) =>
@@ -154,7 +180,11 @@ export default function AddFood() {
     })
   }
 
-  const title = adding
+  const title = lookup
+    ? lookup.status === 'unknown'
+      ? 'Nový výrobok'
+      : 'Čiarový kód'
+    : adding
     ? adding === 'search'
       ? menu
         ? 'Niečo navyše'
@@ -179,7 +209,7 @@ export default function AddFood() {
       </header>
 
       <div className="add-food">
-        {!adding && (
+        {!adding && !lookup && (
           <fieldset className="add-food__group">
             <legend className="add-food__label">Ku ktorému jedlu?</legend>
             <div className="chips">
@@ -198,7 +228,29 @@ export default function AddFood() {
           </fieldset>
         )}
 
-        {adding === 'search' ? (
+        {lookup ? (
+          lookup.status === 'loading' ? (
+            <p className="search__hint">Hľadám výrobok s kódom {lookup.code}…</p>
+          ) : lookup.status === 'error' ? (
+            <>
+              <p className="flow__message flow__message--error" role="alert">
+                Nepodarilo sa overiť kód. Skontroluj internet a skús to znova.
+              </p>
+              <button type="button" className="button button--primary" onClick={() => scanned(lookup.code)}>
+                Skúsiť znova
+              </button>
+            </>
+          ) : (
+            <NewProductForm
+              code={lookup.code}
+              initialName={lookup.name ?? ''}
+              onSaved={(food) => {
+                setLookup(null)
+                pick(food)
+              }}
+            />
+          )
+        ) : adding === 'search' ? (
           <FoodSearch
             placeholder="Hľadaj prísadu, napr. syr, omáčka"
             onPick={(food) => setAdding({ food, grams: defaultAmount(food) })}
@@ -288,10 +340,8 @@ export default function AddFood() {
               history={history}
               busy={busy}
               onQuickAdd={quickAdd}
-              onPick={(food) => {
-                setBase({ food, grams: defaultAmount(food) })
-                setChoice(DEFAULT_CHOICE)
-              }}
+              onScan={() => setScanning(true)}
+              onPick={pick}
             />
             <button type="button" className="text-button" onClick={() => setManual(true)}>
               Nenašiel si? Zadaj ručne
@@ -299,7 +349,123 @@ export default function AddFood() {
           </>
         )}
       </div>
+
+      {scanning && <BarcodeScanner onDetected={scanned} onClose={() => setScanning(false)} />}
     </section>
+  )
+}
+
+// Výrobok, ktorý sa podľa kódu nenašiel: hodnoty z obalu (na 100 g / 100 ml) – zapamätá sa pre celú partiu.
+function NewProductForm(props: { code: string; initialName: string; onSaved: (food: Food) => void }) {
+  const [name, setName] = useState(props.initialName)
+  const [unit, setUnit] = useState<'g' | 'ml'>('g')
+  const [kcal, setKcal] = useState('')
+  const [protein, setProtein] = useState('')
+  const [carbs, setCarbs] = useState('')
+  const [fat, setFat] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    const kcalValue = parseNumber(kcal)
+    const macros = [protein, carbs, fat].map(parseNumber)
+    if (!name.trim()) return setError('Napíš názov výrobku.')
+    if (!kcal.trim() || !Number.isFinite(kcalValue) || kcalValue < 0 || kcalValue > 1000) {
+      return setError(`Zadaj kalórie na 100 ${unit} – číslo od 0 do 1 000.`)
+    }
+    if (macros.some((value) => !Number.isFinite(value) || value < 0 || value > 100)) {
+      return setError(`Gramy na 100 ${unit} musia byť od 0 do 100.`)
+    }
+    setBusy(true)
+    setError('')
+    try {
+      const round1 = (value: number) => Math.round(value * 10) / 10
+      props.onSaved(
+        await saveProduct(props.code, {
+          name: name.trim().slice(0, 100),
+          kcal: round1(kcalValue),
+          protein: round1(macros[0]),
+          carbs: round1(macros[1]),
+          fat: round1(macros[2]),
+          unit,
+        }),
+      )
+    } catch {
+      setBusy(false)
+      setError('Nepodarilo sa uložiť. Skontroluj internet a skús to znova.')
+    }
+  }
+
+  return (
+    <form className="add-food" onSubmit={submit}>
+      <p className="search__hint">
+        Výrobok s kódom {props.code} zatiaľ nepoznáme. Opíš hodnoty z obalu (tabuľka „Výživové údaje“, stĺpec na 100 g
+        alebo 100 ml). Appka si ho zapamätá – nabudúce ho po naskenovaní spozná, aj u kamarátov.
+      </p>
+
+      <label className="add-food__group">
+        <span className="add-food__label">Názov</span>
+        <input
+          className="field"
+          type="text"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="napr. Rajo jogurt jahodový"
+          maxLength={100}
+          autoComplete="off"
+        />
+      </label>
+
+      <div className="add-food__group">
+        <span className="add-food__label">Hodnoty sú na</span>
+        <div className="chips">
+          {(['g', 'ml'] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={option === unit ? 'chip chip--selected' : 'chip'}
+              onClick={() => setUnit(option)}
+            >
+              100 {option}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <label className="add-food__group">
+        <span className="add-food__label">Kalórie na 100 {unit}</span>
+        <span className="number-field">
+          <input
+            className="field number-field__input add-food__kcal"
+            type="text"
+            inputMode="decimal"
+            value={kcal}
+            onChange={(event) => setKcal(event.target.value)}
+            autoComplete="off"
+          />
+          <span className="number-field__unit">kcal</span>
+        </span>
+      </label>
+
+      <div className="add-food__group">
+        <span className="add-food__label">Na 100 {unit} (nepovinné)</span>
+        <div className="macro-fields">
+          <MacroField label="Bielkoviny" value={protein} onChange={setProtein} />
+          <MacroField label="Sacharidy" value={carbs} onChange={setCarbs} />
+          <MacroField label="Tuky" value={fat} onChange={setFat} />
+        </div>
+      </div>
+
+      {error && (
+        <p className="flow__message flow__message--error" role="alert">
+          {error}
+        </p>
+      )}
+      <button type="submit" className="button button--primary" disabled={busy}>
+        {busy ? 'Ukladám…' : 'Uložiť a pokračovať'}
+      </button>
+    </form>
   )
 }
 
@@ -313,6 +479,7 @@ function FoodSearch(props: {
   history?: HistoryItem[]
   busy?: boolean
   onQuickAdd?: (item: HistoryItem) => void
+  onScan?: () => void
   onPick: (food: Food) => void
 }) {
   const [query, setQuery] = useState('')
@@ -360,6 +527,12 @@ function FoodSearch(props: {
           enterKeyHint="search"
         />
       </label>
+      {props.onScan && (
+        <button type="button" className="add-extra" onClick={props.onScan}>
+          <ScanBarcode size={20} aria-hidden="true" />
+          Naskenovať čiarový kód
+        </button>
+      )}
 
       {query.trim() === '' ? (
         <>
