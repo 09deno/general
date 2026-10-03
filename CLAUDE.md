@@ -136,6 +136,15 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - Vyskúšať ostrú verziu na iPhone (`dccf2f4b.vercel.app`): pridať na plochu, skontrolovať ikonu, úvodnú obrazovku a horný pruh vo svetlom aj tmavom režime.
 - Ak sa bude pracovať v cloud session: povoliť v nastaveniach prostredia sieť pre **balíčky (npm, `registry.npmjs.org`)** – nechať zapnutý predvolený zoznam správcov balíčkov. Bez toho sa appka v kontajneri nedá zostaviť. (Na počítači majiteľa npm funguje.)
 
+### Nápady na neskôr (zatiaľ len návrhy, nestavať bez súhlasu)
+- **Fotky progresu** (nápad majiteľa 3. 10. 2026): na začiatku „ilustračná“ (štartovacia) fotka postavy, potom pravidelne aktuálne fotky a porovnanie vedľa seba (pred / teraz). Pravdepodobne do Fázy 6 (Progres). Fotky sú citlivé – len súkromné, každý vidí iba svoje.
+  - Z prieskumu: pri fotení ukázať predošlú fotku priesvitne cez kameru („duch“), aby bola póza a vzdialenosť rovnaká; porovnanie vedľa seba alebo posuvníkom. Fotky zmenšiť (~200 kB), bezplatné úložisko Supabase má 1 GB.
+- **Prieskum 3. 10. 2026** (MyFitnessPal, MacroFactor, Cronometer, Kalorické tabuľky, Hevy, Strong, štúdie o sebasledovaní) – kandidáti, majiteľ vyberá:
+  - Jedlo: zopakovať jedlo zo včera jedným ťuknutím; uložené jedlá / vlastné recepty zo surovín; pitný režim; pripomienky (web push – na iPhone len pre appku na ploche, iOS 16.4+); cieľ kcal, ktorý sa sám upravuje podľa trendu váhy (ako MacroFactor).
+  - Tréning: časovač pauzy po ✓; obrázok a návod ku cviku (voľná databáza free-exercise-db, public domain, 800+ cvikov s fotkami); obrazovka nezhasne počas tréningu (wake lock, iOS 18.4+); „Nový rekord!“ hneď pri ✓; poznámka ku cviku (napr. „sedadlo na 4“); kalkulačka kotúčov.
+  - Progres a partia: vyhladený trend váhy namiesto skákania z dňa na deň; týždenný rebríček partie podľa počtu tréningov; spoločné výzvy; týždenná (nie denná) séria – denné série často demotivujú.
+  - Nedá sa v appke na ploche (PWA) na iPhone: kroky / Apple Zdravie, vibrácie.
+
 ## Prostredie (cloud session)
 
 - Sieť kontajnera musí povoliť `*.supabase.co`, `api.supabase.com`, `world.openfoodfacts.org`, `*.vercel.app` a predvolený zoznam správcov balíčkov (`registry.npmjs.org`), inak sa appka nedá zostaviť ani otestovať. Nastavuje sa v nastaveniach prostredia (Network access → Custom → Allowed domains + predvolené balíčky). Stav 3. 10. 2026: Supabase, Open Food Facts a Vercel fungujú, `registry.npmjs.org` je zablokovaný.
