@@ -69,7 +69,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - [ ] Fáza 2 – kostra a prihlásenie
   - [x] 2.1 Kostra: navigácia Jedlo / Tréning / Progres / Nastavenia, prázdne sekcie (PR #1)
   - [x] 2.2 Appka na plochu: ikona, úvodné obrazovky, manifest, návod na pridanie (PR #2)
-  - [ ] 2.3 Databáza: Supabase projekt vo Frankfurte, prepojenie s appkou ← **rozpracované**: projekt založený a overený; prepojenie s appkou čaká na povolenie npm v sieti. V appke sa nemá nič viditeľne zmeniť (spojenie overí Claude, rozhodol majiteľ).
+  - [x] 2.3 Databáza: Supabase projekt vo Frankfurte, prepojenie s appkou cez `src/lib/supabase.ts` (PR #5). Spojenie overil Claude 3. 10. 2026 (prihlasovací server aj databáza odpovedajú, verejný kľúč platí); v appke sa nič viditeľne nezmenilo (rozhodol majiteľ).
   - [ ] 2.4 Registrácia (pozývací kód + prezývka + PIN), prihlásenie, odhlásenie
 - [ ] Fáza 3 – onboarding a výpočet cieľov
 - [ ] Fáza 4 – Jedlo
@@ -79,9 +79,14 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 
 ### Čaká na majiteľa (pripomenúť)
 - Vyskúšať ostrú verziu na iPhone (`dccf2f4b.vercel.app`): pridať na plochu, skontrolovať ikonu, úvodnú obrazovku a horný pruh vo svetlom aj tmavom režime.
-- Povoliť v nastaveniach prostredia sieť pre **balíčky (npm, `registry.npmjs.org`)** – nechať zapnutý predvolený zoznam správcov balíčkov. Bez toho sa appka v kontajneri nedá zostaviť.
+- Ak sa bude pracovať v cloud session: povoliť v nastaveniach prostredia sieť pre **balíčky (npm, `registry.npmjs.org`)** – nechať zapnutý predvolený zoznam správcov balíčkov. Bez toho sa appka v kontajneri nedá zostaviť. (Na počítači majiteľa npm funguje.)
 
 ## Prostredie (cloud session)
 
 - Sieť kontajnera musí povoliť `*.supabase.co`, `api.supabase.com`, `world.openfoodfacts.org`, `*.vercel.app` a predvolený zoznam správcov balíčkov (`registry.npmjs.org`), inak sa appka nedá zostaviť ani otestovať. Nastavuje sa v nastaveniach prostredia (Network access → Custom → Allowed domains + predvolené balíčky). Stav 3. 10. 2026: Supabase, Open Food Facts a Vercel fungujú, `registry.npmjs.org` je zablokovaný.
 - Snímky sa robia Playwrightom s prehliadačom `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (Playwright nainštaluj mimo repa).
+
+## Prostredie (počítač majiteľa, Claude desktop)
+
+- Repo je naklonované v `C:\Users\Administrator\Desktop\Claude\general` (Windows, Node 24). npm aj GitHub (`gh`, účet 09deno) fungujú.
+- Náhľad: vývojový server `npm run dev` + vstavaný prehliadač Claude desktopu (veľkosť 390×844, svetlý aj tmavý režim) namiesto Playwrightu.
