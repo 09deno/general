@@ -52,7 +52,7 @@ export const FOODS: Food[] = [
   food('Müsli', 370, 9, 65, 7, [['1 porcia', 50]], { aliases: 'musli granola' }),
   food('Cornflakes', 380, 7, 84, 0.9, [['1 porcia', 40]], { aliases: 'kukuričné lupienky cereálie' }),
   food('Ryžové chlebíky', 390, 8, 81, 3, [['1 ks', 8]], { aliases: 'ryzove' }),
-  food('Ryža varená', 130, 2.7, 28, 0.3, [['1 porcia', 200]], { aliases: 'ryza' }),
+  food('Ryža varená', 130, 2.7, 28, 0.3, [['1 porcia', 200]], { aliases: 'ryza jazmínová basmati' }),
   food('Cestoviny varené', 158, 5.8, 31, 0.9, [['1 porcia', 200]], { aliases: 'špagety penne makaróny' }),
   food('Zemiaky varené', 80, 2, 17, 0.1, [['1 ks', 100], ['1 porcia', 200]], { aliases: 'zemiak' }),
   food('Zemiaková kaša', 100, 2, 15, 3.7, [['1 porcia', 200]], { aliases: 'pyré' }),
@@ -62,6 +62,21 @@ export const FOODS: Food[] = [
   food('Kuskus varený', 112, 3.8, 23, 0.2, [['1 porcia', 200]]),
   food('Bulgur varený', 83, 3, 19, 0.2, [['1 porcia', 200]]),
   food('Quinoa varená', 120, 4.4, 21, 1.9, [['1 porcia', 200]], { aliases: 'kinoa' }),
+
+  food('Kaiserka', 280, 9, 56, 2, [['1 ks', 60]], { aliases: 'žemľa pečivo' }),
+  food('Pita chlieb', 275, 9, 56, 1.2, [['1 ks', 60]], { aliases: 'pita' }),
+  food('Bagel', 250, 10, 49, 1.5, [['1 ks', 90]]),
+  food('Pagáč', 450, 10, 40, 28, [['1 ks', 50]], { aliases: 'pagac' }),
+  food('Lievance / pancakes', 230, 6, 30, 9, [['1 ks', 50]], { aliases: 'lievanec pancake' }),
+  food('Granola', 470, 10, 60, 20, [['1 porcia', 50]], { aliases: 'musli' }),
+  food('Ovsená kaša s mliekom', 110, 4.5, 17, 2.6, [['1 porcia', 250]], { aliases: 'ovsene vlocky' }),
+  food('Chia puding', 140, 5, 12, 8, [['1 porcia', 150]], { aliases: 'chia' }),
+  food('Gnocchi', 150, 3.5, 33, 0.5, [['1 porcia', 200]], { aliases: 'noky' }),
+  food('Ryžové rezance varené', 110, 1, 25, 0.2, [['1 porcia', 200]], { aliases: 'nudle' }),
+  food('Krokety', 210, 3, 27, 10, [['1 porcia', 150]]),
+  food('Zemiaky pečené v šupke', 93, 2.5, 21, 0.1, [['1 ks', 150]], { aliases: 'zemiak' }),
+  food('Batáty pečené', 90, 2, 21, 0.2, [['1 porcia', 200]], { aliases: 'sladké zemiaky' }),
+  food('Lokše', 230, 5, 40, 5, [['1 ks', 70]], { aliases: 'lokse' }),
 
   // ---------- Mäso a ryby ----------
   food('Kuracie prsia (pečené)', 165, 31, 0, 3.6, [['1 porcia', 150]], { aliases: 'kura kuracie mäso' }),
@@ -83,6 +98,22 @@ export const FOODS: Food[] = [
   food('Rybie prsty', 230, 13, 20, 11, [['1 ks', 30]], { aliases: 'ryba' }),
   food('Kuracie nugetky', 290, 15, 17, 18, [['1 ks', 18], ['1 porcia (6 ks)', 110]], { aliases: 'nuggets' }),
 
+  food('Hovädzí steak (grilovaný)', 250, 26, 0, 16, [['1 ks', 200]], { aliases: 'hovadzi steak' }),
+  food('Bravčový rezeň na prírodno', 190, 28, 0, 8, [['1 ks', 150]], { aliases: 'rezen' }),
+  food('Kuracie krídla (pečené)', 260, 24, 0, 18, [['1 porcia', 200]], { aliases: 'kridla wings' }),
+  food('Kuracie stripsy (vyprážané)', 270, 18, 16, 15, [['1 ks', 35]], { aliases: 'stripsy' }),
+  food('Pečená kačica', 340, 19, 0, 28, [['1 porcia', 200]], { aliases: 'kacica' }),
+  food('Gyros mäso', 210, 18, 2, 14, [['1 porcia', 150]], { aliases: 'kebab mäso' }),
+  food('Fašírka', 260, 14, 12, 17, [['1 ks', 100]], { aliases: 'fasirka karbonátka' }),
+  food('Čevapčiči', 270, 17, 3, 21, [['1 ks', 30]], { aliases: 'cevapcici' }),
+  food('Hot dog', 250, 9, 24, 13, [['1 ks', 120]], { aliases: 'párok v rožku' }),
+  food('Údené mäso', 250, 22, 0, 18, [['1 porcia', 100]], { aliases: 'udene' }),
+  food('Pstruh (pečený)', 150, 21, 0, 7, [['1 ks', 200]], { aliases: 'ryba' }),
+  food('Makrela údená', 300, 19, 0, 25, [['1 porcia', 100]], { aliases: 'ryba' }),
+  food('Sardinky v oleji', 210, 25, 0, 11, [['1 konzerva', 100]], { aliases: 'ryba' }),
+  food('Krevety (varené)', 99, 24, 0.2, 0.3, [['1 porcia', 100]], { aliases: 'kreveta' }),
+  food('Tofu', 140, 15, 3, 8, [['1 porcia', 100]]),
+
   // ---------- Vajcia a mliečne výrobky ----------
   food('Vajce', 143, 12.6, 0.7, 9.5, [['1 ks', 55]], { aliases: 'vajíčko vajcia' }),
   food('Vaječný bielok', 52, 11, 0.7, 0.2, [['1 ks', 33]], { aliases: 'bielok' }),
@@ -99,12 +130,21 @@ export const FOODS: Food[] = [
   food('Tvaroh nízkotučný', 75, 13, 4, 0.5, [['1 porcia', 100], ['1 balenie', 250]], { aliases: 'odtučnený' }),
   food('Cottage (zrnitý tvaroh)', 95, 12, 2.5, 4, [['1 kelímok', 180]], { aliases: 'cottage cheese' }),
   food('Syr eidam 30 %', 260, 30, 0, 16, [['1 plátok', 20]], { aliases: 'syr' }),
-  food('Syr eidam 45 % / gouda', 350, 25, 0, 28, [['1 plátok', 20]], { aliases: 'syr' }),
+  food('Syr eidam 45 % / gouda', 350, 25, 0, 28, [['1 plátok', 20], ['1 hrsť strúhaného', 30]], { aliases: 'syr strúhaný' }),
   food('Mozzarella', 250, 18, 1.5, 19, [['1 guľa', 125]], { aliases: 'syr' }),
   food('Bryndza', 280, 18, 1.5, 23, [['1 porcia', 50]], { aliases: 'syr' }),
   food('Maslo', 740, 0.7, 0.6, 82, [['na 1 chlieb', 10]], { aliases: 'maslo' }),
   food('Smotana na varenie', 135, 3, 4, 12, [['1 lyžica', 15]], { aliases: 'smotana' }),
   food('Srvátkový proteín (prášok)', 380, 75, 8, 6, [['1 odmerka', 30]], { aliases: 'protein whey nápoj' }),
+
+  food('Ementál', 380, 28, 0, 30, [['1 plátok', 20]], { aliases: 'syr' }),
+  food('Niva', 350, 21, 0, 29, [['1 porcia', 30]], { aliases: 'syr plesnivý' }),
+  food('Hermelín', 300, 20, 0, 24, [['1 ks', 120]], { aliases: 'syr' }),
+  food('Údený syr (parenica, oštiepok)', 300, 25, 2, 21, [['1 porcia', 50]], { aliases: 'syr parenica ostiepok' }),
+  food('Feta', 265, 14, 4, 21, [['1 porcia', 50]], { aliases: 'syr balkánsky' }),
+  food('Lučina', 230, 8, 3, 21, [['1 porcia', 30]], { aliases: 'lucina nátierka' }),
+  food('Puding', 120, 3, 18, 3.5, [['1 kelímok', 125]]),
+  food('Termix', 180, 6, 22, 7, [['1 kelímok', 90]], { aliases: 'tvarohový dezert' }),
 
   // ---------- Ovocie ----------
   food('Banán', 89, 1.1, 23, 0.3, [['1 ks', 120]], { aliases: 'banan' }),
@@ -123,6 +163,14 @@ export const FOODS: Food[] = [
   food('Hrozienka', 299, 3, 79, 0.5, [['1 hrsť', 30]], { aliases: 'sušené ovocie' }),
   food('Avokádo', 160, 2, 9, 15, [['1/2 ks', 70], ['1 ks', 140]], { aliases: 'avokado' }),
 
+  food('Marhuľa', 48, 1.4, 11, 0.4, [['1 ks', 40]], { aliases: 'marhula' }),
+  food('Čerešne', 63, 1.1, 16, 0.2, [['1 porcia', 100]], { aliases: 'ceresne višne' }),
+  food('Maliny', 52, 1.2, 12, 0.7, [['1 porcia', 100]]),
+  food('Mango', 60, 0.8, 15, 0.4, [['1 ks', 300]]),
+  food('Grapefruit', 42, 0.8, 11, 0.1, [['1/2 ks', 150]]),
+  food('Sušené slivky', 240, 2.2, 64, 0.4, [['5 ks', 40]], { aliases: 'sušené ovocie' }),
+  food('Datle', 280, 2.5, 75, 0.4, [['1 ks', 8]], { aliases: 'sušené ovocie' }),
+
   // ---------- Zelenina a strukoviny ----------
   food('Paradajka', 18, 0.9, 3.9, 0.2, [['1 ks', 120]], { aliases: 'rajčina' }),
   food('Uhorka', 15, 0.7, 3.6, 0.1, [['1 ks', 250]]),
@@ -140,6 +188,18 @@ export const FOODS: Food[] = [
   food('Šošovica varená', 116, 9, 20, 0.4, [['1 porcia', 200]], { aliases: 'sosovica' }),
   food('Cícer varený', 164, 8.9, 27, 2.6, [['1 porcia', 120]], { aliases: 'cicer' }),
 
+  food('Špenát čerstvý', 23, 2.9, 3.6, 0.4, [['1 hrsť', 30]], { aliases: 'spenat' }),
+  food('Špenátový prívarok', 80, 3, 6, 5, [['1 porcia', 200]], { aliases: 'spenat' }),
+  food('Šampiňóny', 22, 3.1, 3.3, 0.3, [['1 porcia', 100]], { aliases: 'huby sampinony' }),
+  food('Cuketa', 17, 1.2, 3.1, 0.3, [['1 ks', 200]]),
+  food('Baklažán', 25, 1, 6, 0.2, [['1 porcia', 150]], { aliases: 'baklazan' }),
+  food('Cvikla (červená repa)', 43, 1.6, 10, 0.2, [['1 porcia', 100]], { aliases: 'cvikla repa' }),
+  food('Biela kapusta', 25, 1.3, 6, 0.1, [['1 porcia', 100]], { aliases: 'kapusta' }),
+  food('Zelená fazuľka', 31, 1.8, 7, 0.2, [['1 porcia', 150]], { aliases: 'fazulka' }),
+  food('Edamame', 120, 12, 9, 5, [['1 porcia', 50]], { aliases: 'sója fazuľky' }),
+  food('Olivy', 115, 0.8, 6, 11, [['5 ks', 20]]),
+  food('Kyslé uhorky', 12, 0.5, 2, 0.2, [['1 ks', 50]], { aliases: 'uhorka sterilizovaná' }),
+
   // ---------- Orechy, tuky, nátierky, dochucovadlá ----------
   food('Arašidy', 585, 24, 16, 50, [['1 hrsť', 30]], { aliases: 'orechy arasidy' }),
   food('Mandle', 580, 21, 10, 50, [['1 hrsť', 30]], { aliases: 'orechy' }),
@@ -155,6 +215,24 @@ export const FOODS: Food[] = [
   food('Majonéza', 680, 1, 1, 75, [['1 lyžica', 15]], { aliases: 'majoneza' }),
   food('Tatárska omáčka', 480, 1, 6, 50, [['1 lyžica', 20]], { aliases: 'tatarka' }),
 
+  // ---------- Omáčky a prísady k jedlu ----------
+  food('Paradajková omáčka', 50, 1.6, 8, 1.5, [['1 porcia', 100]], { aliases: 'omacka na cestoviny' }),
+  food('Bolonská omáčka (mäsová)', 110, 7, 5, 7, [['1 porcia', 150]], { aliases: 'omacka bolognese' }),
+  food('Smotanová omáčka', 150, 2.5, 5, 13, [['1 porcia', 100]], { aliases: 'omacka carbonara' }),
+  food('Syrová omáčka', 180, 6, 8, 14, [['1 porcia', 100]], { aliases: 'omacka' }),
+  food('Pesto', 450, 5, 6, 45, [['1 lyžica', 15], ['1 porcia', 30]], { aliases: 'omacka bazalka' }),
+  food('Parmezán', 400, 36, 0, 28, [['1 lyžica strúhaného', 5], ['1 porcia', 20]], { aliases: 'syr parmezan' }),
+  food('Sójová omáčka', 60, 8, 6, 0, [['1 lyžica', 15]], { unit: 'ml', aliases: 'omacka soja' }),
+  food('Teriyaki omáčka', 90, 2, 18, 0.5, [['1 porcia', 30]], { aliases: 'omacka' }),
+  food('Sweet chilli omáčka', 200, 0.5, 48, 0.5, [['1 lyžica', 15]], { aliases: 'omacka' }),
+  food('BBQ omáčka', 170, 1, 40, 0.5, [['1 lyžica', 15]], { aliases: 'omacka barbecue' }),
+  food('Cesnaková omáčka', 450, 1, 5, 47, [['1 lyžica', 20]], { aliases: 'omacka dresing cesnak' }),
+  food('Jogurtový dresing', 120, 2, 6, 10, [['1 porcia', 30]], { aliases: 'dresing' }),
+  food('Olejový dresing', 400, 0.5, 8, 40, [['1 lyžica', 15]], { aliases: 'dresing vinaigrette francúzsky' }),
+  food('Horčica', 70, 4, 6, 4, [['1 lyžica', 15]], { aliases: 'horcica' }),
+  food('Hummus', 170, 7, 14, 10, [['1 porcia', 50]], { aliases: 'cícer nátierka' }),
+  food('Ajvar', 70, 1.5, 8, 4, [['1 lyžica', 20]], { aliases: 'nátierka' }),
+
   // ---------- Sladkosti a pochutiny ----------
   food('Horká čokoláda', 600, 8, 34, 43, [['1 rad', 25], ['1 tabuľka', 100]], { aliases: 'cokolada' }),
   food('Mliečna čokoláda', 535, 7.7, 59, 30, [['1 rad', 25], ['1 tabuľka', 100]], { aliases: 'cokolada' }),
@@ -166,6 +244,19 @@ export const FOODS: Food[] = [
   food('Proteínová tyčinka', 370, 33, 35, 12, [['1 ks', 55]], { aliases: 'protein' }),
   food('Müsli tyčinka', 420, 6, 65, 14, [['1 ks', 25]], { aliases: 'musli' }),
 
+  food('Šiška / donut', 400, 5, 45, 22, [['1 ks', 70]], { aliases: 'siska donut' }),
+  food('Bábovka', 380, 6, 50, 17, [['1 kúsok', 60]], { aliases: 'babovka' }),
+  food('Torta', 350, 5, 45, 17, [['1 kúsok', 120]], { aliases: 'zákusok' }),
+  food('Tiramisu', 280, 5, 30, 16, [['1 porcia', 120]], { aliases: 'zákusok' }),
+  food('Medovník', 400, 5, 55, 18, [['1 kúsok', 100]], { aliases: 'medovnik zákusok' }),
+  food('Oblátka (napr. Horalka)', 520, 7, 57, 29, [['1 ks', 50]], { aliases: 'horalky oblatka' }),
+  food('Čokoládová tyčinka (Mars, Snickers)', 480, 6, 60, 23, [['1 ks', 50]], { aliases: 'tycinka' }),
+  food('Želé cukríky', 340, 6, 77, 0, [['1 hrsť', 30]], { aliases: 'gumené medvedíky haribo' }),
+  food('Popcorn', 500, 8, 58, 28, [['1 porcia', 50]]),
+  food('Slané tyčinky', 380, 10, 75, 4, [['1 hrsť', 30]], { aliases: 'tycinky' }),
+  food('Krekry', 450, 9, 68, 16, [['1 porcia', 30]], { aliases: 'kreker' }),
+  food('Palacinka s nutellou', 290, 6, 35, 14, [['1 ks', 90]], { aliases: 'palacinky' }),
+
   // ---------- Nápoje ----------
   food('Pivo 12°', 45, 0.5, 3.6, 0, [['1 veľké', 500], ['1 malé', 300]], { unit: 'ml', aliases: 'pivo' }),
   food('Víno', 85, 0.1, 2.6, 0, [['1 deci', 100], ['1 pohár', 200]], { unit: 'ml', aliases: 'vino' }),
@@ -174,6 +265,17 @@ export const FOODS: Food[] = [
   food('Energetický nápoj', 45, 0, 11, 0, [['1 plechovka', 250]], { unit: 'ml', aliases: 'energy drink' }),
   food('Cappuccino / káva s mliekom', 40, 2, 3.5, 2, [['1 šálka', 180]], { unit: 'ml', aliases: 'kava latte' }),
   food('Kakao s mliekom', 80, 3.4, 11, 2, [['1 hrnček', 250]], { unit: 'ml', aliases: 'kakao' }),
+
+  food('Kofola', 34, 0, 8.5, 0, [['1 pohár', 250], ['1 fľaša', 500]], { unit: 'ml' }),
+  food('Limonáda (Fanta, Sprite)', 35, 0, 8.5, 0, [['1 plechovka', 330], ['1 fľaša', 500]], { unit: 'ml', aliases: 'malinovka' }),
+  food('Ľadový čaj (Fuzetea)', 19, 0, 4.5, 0, [['1 fľaša', 500]], { unit: 'ml', aliases: 'ice tea' }),
+  food('Smoothie', 55, 0.8, 12, 0.3, [['1 fľaša', 250]], { unit: 'ml' }),
+  food('Proteínový šejk s mliekom', 82, 9, 5, 2.5, [['1 šejk', 280]], { unit: 'ml', aliases: 'protein shake' }),
+  food('Latte', 50, 3, 4.5, 2, [['1 pohár', 300]], { unit: 'ml', aliases: 'kava' }),
+  food('Čierna káva', 2, 0.1, 0, 0, [['1 šálka', 100]], { unit: 'ml', aliases: 'kava espresso' }),
+  food('Pivo nealko', 25, 0.3, 5.5, 0, [['1 veľké', 500]], { unit: 'ml', aliases: 'pivo' }),
+  food('Radler', 40, 0.3, 9, 0, [['1 veľké', 500]], { unit: 'ml', aliases: 'pivo' }),
+  food('Tvrdý alkohol (vodka, rum)', 230, 0, 0, 0, [['1 poldeci', 50]], { unit: 'ml', aliases: 'vodka rum borovička fernet' }),
 
   // ---------- Varené jedlá – školská jedáleň, reštaurácia, rozvoz ----------
   food('Vývar s rezancami', 35, 2.5, 3.5, 1.2, [['1 tanier', 300]], { unit: 'ml', aliases: 'polievka slepačia' }),
@@ -209,6 +311,38 @@ export const FOODS: Food[] = [
   food('Sushi (maki)', 150, 4.5, 30, 1, [['1 ks', 25], ['1 porcia (8 ks)', 200]], { aliases: 'susi' }),
   food('Obložený sendvič (šunka, syr)', 250, 12, 28, 10, [['1 ks', 150]], { aliases: 'bageta sendvic' }),
   food('Toast so šunkou a syrom', 260, 14, 25, 11, [['1 ks', 100]], { aliases: 'toast' }),
+  food('Paradajková polievka', 50, 1.2, 8, 1.5, [['1 tanier', 300]], { unit: 'ml', aliases: 'polievka' }),
+  food('Šošovicová polievka', 80, 5, 11, 2, [['1 tanier', 300]], { unit: 'ml', aliases: 'polievka sosovicova' }),
+  food('Hubová polievka (kulajda)', 75, 2, 6, 5, [['1 tanier', 300]], { unit: 'ml', aliases: 'polievka kulajda' }),
+  food('Cesnačka', 90, 3, 8, 5, [['1 tanier', 300]], { unit: 'ml', aliases: 'polievka cesnacka' }),
+  food('Zemiaková polievka', 65, 1.5, 9, 2.5, [['1 tanier', 300]], { unit: 'ml', aliases: 'polievka' }),
+  food('Hovädzí vývar', 25, 2.5, 1, 1, [['1 tanier', 300]], { unit: 'ml', aliases: 'polievka' }),
+  food('Ramen', 90, 5, 11, 3, [['1 miska', 600]], { unit: 'ml', aliases: 'polievka nudle' }),
+  food('Rezeň so zemiakovým šalátom', 230, 10, 18, 13, [['1 porcia', 400]], { aliases: 'rezen' }),
+  food('Zemiakový šalát', 160, 2, 14, 11, [['1 porcia', 200]], { aliases: 'salat' }),
+  food('Vyprážaný karfiol', 210, 6, 16, 14, [['1 porcia', 200]], { aliases: 'karfiol' }),
+  food('Plnená paprika s knedľou', 120, 6, 14, 4.5, [['1 porcia', 450]], { aliases: 'paprika' }),
+  food('Kurací steak so zeleninou', 120, 15, 4, 5, [['1 porcia', 350]], { aliases: 'kura' }),
+  food('Pečené kuracie stehno s ryžou', 170, 10, 17, 7, [['1 porcia', 400]], { aliases: 'kura' }),
+  food('Pečená krkovička so zemiakmi', 190, 11, 13, 11, [['1 porcia', 400]], { aliases: 'krkovicka' }),
+  food('Zapekané cestoviny so syrom', 180, 8, 20, 8, [['1 porcia', 350]], { aliases: 'mac and cheese' }),
+  food('Rezance s makom', 280, 7, 45, 8, [['1 porcia', 300]], { aliases: 'rezance' }),
+  food('Hamburger s hranolkami (menu)', 260, 11, 25, 13, [['1 porcia', 450]], { aliases: 'burger' }),
+  food('Gyros tanier s hranolkami', 200, 10, 16, 11, [['1 porcia', 500]], { aliases: 'gyros kebab' }),
+  food('Fish and chips', 230, 10, 22, 12, [['1 porcia', 400]], { aliases: 'ryba hranolky' }),
+  food('Wrap s kuracím mäsom', 210, 11, 22, 8, [['1 ks', 250]], { aliases: 'tortilla' }),
+  food('Bageta s kuracím mäsom', 230, 12, 28, 8, [['1 ks', 250]], { aliases: 'sendvic' }),
+  food('Quesadilla', 280, 12, 25, 15, [['1 ks', 200]]),
+  food('Burrito', 180, 8, 24, 6, [['1 ks', 350]]),
+  food('Nachos so syrom', 350, 8, 36, 20, [['1 porcia', 200]]),
+  food('Pad thai', 170, 7, 22, 6, [['1 porcia', 400]], { aliases: 'rezance thai' }),
+  food('Sladkokyslé kura (čína)', 170, 8, 20, 6, [['1 box', 500]], { aliases: 'cina' }),
+  food('Kuracie s kešu (čína)', 150, 10, 12, 7, [['1 box', 500]], { aliases: 'cina kesu' }),
+  food('Smažené rezance (čína)', 180, 6, 24, 7, [['1 box', 400]], { aliases: 'cina nudle' }),
+  food('Rizoto s hubami', 140, 3.5, 20, 5, [['1 porcia', 350]], { aliases: 'rizoto' }),
+  food('Šalát Caesar', 160, 10, 6, 11, [['1 porcia', 300]], { aliases: 'salat cezar' }),
+  food('Grécky šalát', 100, 3.5, 5, 8, [['1 porcia', 300]], { aliases: 'salat' }),
+  food('Tuniakový šalát', 140, 12, 5, 8, [['1 porcia', 250]], { aliases: 'salat' }),
 ]
 
 // bez diakritiky a malými písmenami, aby „ryza“ našlo „Ryža“
@@ -218,13 +352,19 @@ const plain = (text: string) =>
     .replace(/\p{M}/gu, '')
     .toLowerCase()
 
-const INDEX = FOODS.map((item) => ({ item, name: plain(item.name), all: plain(`${item.name} ${item.aliases}`) }))
+const INDEX = FOODS.map((item) => {
+  const all = plain(`${item.name} ${item.aliases}`)
+  return { item, name: plain(item.name), all, parts: all.split(/[^a-z0-9]+/) }
+})
 
-// Každé napísané slovo sa musí nájsť v názve alebo inom názve; navrchu sú jedlá, ktorých názov tak začína.
+// Každé napísané slovo musí začínať niektoré slovo názvu (alebo iného názvu), aby „cina“ nenašlo „Lučinu“;
+// ak sa tak nenájde nič, stačí, keď je kdekoľvek v názve. Navrchu sú jedlá, ktorých názov tak začína.
 export function searchFoods(query: string, limit = 25): Food[] {
   const words = plain(query).split(/\s+/).filter(Boolean)
   if (words.length === 0) return []
-  return INDEX.filter((entry) => words.every((word) => entry.all.includes(word)))
+  let found = INDEX.filter((entry) => words.every((word) => entry.parts.some((part) => part.startsWith(word))))
+  if (found.length === 0) found = INDEX.filter((entry) => words.every((word) => entry.all.includes(word)))
+  return found
     .sort((a, b) => Number(b.name.startsWith(words[0])) - Number(a.name.startsWith(words[0])))
     .slice(0, limit)
     .map((entry) => entry.item)
