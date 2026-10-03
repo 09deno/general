@@ -109,10 +109,10 @@ export const EXERCISES: Exercise[] = [
   ex('seated-calf-raise', 'Seated Calf Raise', 'legs', 'weight', 'výpony v sede lýtka'),
 
   // Ramená
-  ex('overhead-press', 'Overhead Press (OHP)', 'shoulders', 'weight', 'tlak nad hlavu s činkou military press'),
-  ex('dumbbell-shoulder-press', 'Dumbbell Shoulder Press', 'shoulders', 'weight', 'tlak s jednoručkami nad hlavu'),
-  ex('machine-shoulder-press', 'Machine Shoulder Press', 'shoulders', 'weight', 'tlak nad hlavu na stroji'),
-  ex('smith-shoulder-press', 'Smith Machine Shoulder Press', 'shoulders', 'weight', 'tlak nad hlavu smith'),
+  ex('overhead-press', 'Overhead Press (OHP)', 'shoulders', 'weight', 'tlak nad hlavu s činkou military press shoulder press'),
+  ex('dumbbell-shoulder-press', 'Dumbbell Shoulder Press', 'shoulders', 'weight', 'seated tlak s jednoručkami nad hlavu v sede'),
+  ex('machine-shoulder-press', 'Machine Shoulder Press', 'shoulders', 'weight', 'seated tlak nad hlavu na stroji v sede'),
+  ex('smith-shoulder-press', 'Smith Machine Shoulder Press', 'shoulders', 'weight', 'seated tlak nad hlavu smith v sede'),
   ex('arnold-press', 'Arnold Press', 'shoulders', 'weight', 'tlak jednoručky'),
   ex('lateral-raise', 'Dumbbell Lateral Raise', 'shoulders', 'weight', 'upažovanie s jednoručkami bočné delty'),
   ex('cable-lateral-raise', 'Cable Lateral Raise', 'shoulders', 'weight', 'upažovanie na kladke'),
@@ -183,9 +183,17 @@ const plain = (text: string) =>
     .replace(/\p{M}/gu, '')
     .toLowerCase()
 
-// každé napísané slovo musí byť v názve alebo inom názve (bez diakritiky)
-export function matchesExercise(exercise: Exercise, query: string) {
+const searchText = (exercise: Exercise) => plain(`${exercise.name} ${exercise.aliases} ${GROUP_LABELS[exercise.group]}`)
+
+// Najprv cviky, kde sú všetky napísané slová (bez diakritiky). Ak taký nie je, napr. „seated shoulder press“,
+// ukážu sa podobné – kde sedí najviac slov (aspoň 3-písmenových, „s“ či „na“ sú skoro všade).
+export function searchExercises(list: Exercise[], query: string): { items: Exercise[]; exact: boolean } {
   const words = plain(query).split(/\s+/).filter(Boolean)
-  const text = plain(`${exercise.name} ${exercise.aliases} ${GROUP_LABELS[exercise.group]}`)
-  return words.every((word) => text.includes(word))
+  if (words.length === 0) return { items: list, exact: true }
+  const exact = list.filter((exercise) => words.every((word) => searchText(exercise).includes(word)))
+  if (exact.length > 0) return { items: exact, exact: true }
+  const long = words.filter((word) => word.length >= 3)
+  const hits = (exercise: Exercise) => long.filter((word) => searchText(exercise).includes(word)).length
+  const best = Math.max(0, ...list.map(hits))
+  return { items: best === 0 ? [] : list.filter((exercise) => hits(exercise) === best), exact: false }
 }

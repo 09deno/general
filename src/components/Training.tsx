@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, Check, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
-import { EXERCISES, GROUP_LABELS, GROUPS, KINDS, matchesExercise, type Exercise, type ExerciseKind, type MuscleGroup } from '../data/exercises'
+import { EXERCISES, GROUP_LABELS, GROUPS, KINDS, searchExercises, type Exercise, type ExerciseKind, type MuscleGroup } from '../data/exercises'
 import {
   addCustomExercise,
   DAY_NAMES,
@@ -408,8 +408,7 @@ function ExercisePicker(props: {
   const { day, custom } = props
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
-  const all = [...EXERCISES, ...custom]
-  const found = query.trim() ? all.filter((exercise) => matchesExercise(exercise, query)) : all
+  const { items: found, exact } = searchExercises([...EXERCISES, ...custom], query)
 
   return (
     <section className="screen">
@@ -449,6 +448,19 @@ function ExercisePicker(props: {
               />
             </label>
 
+            {/* navrchu, aby sa nemuselo prechádzať celým zoznamom */}
+            <button type="button" className="add-extra" onClick={() => setCreating(true)}>
+              <Plus size={18} aria-hidden="true" />
+              Pridať vlastný cvik
+            </button>
+            {!exact && (
+              <p className="search__hint">
+                {found.length === 0
+                  ? 'Taký cvik v zozname nie je – pridaj si ho ako vlastný.'
+                  : 'Presne taký cvik v zozname nie je. Podobné sú nižšie, alebo si ho pridaj ako vlastný.'}
+              </p>
+            )}
+
             {GROUPS.map((group) => {
               const items = found.filter((exercise) => exercise.group === group.value)
               if (items.length === 0) return null
@@ -486,12 +498,6 @@ function ExercisePicker(props: {
                 </div>
               )
             })}
-            {found.length === 0 && <p className="search__hint">Taký cvik nepoznáme – pridaj si vlastný.</p>}
-
-            <button type="button" className="add-extra" onClick={() => setCreating(true)}>
-              <Plus size={18} aria-hidden="true" />
-              Pridať vlastný cvik
-            </button>
             <div className="plan__done">
               <button type="button" className="button button--primary" onClick={props.onClose}>
                 Hotovo ({exerciseCount(day.exercises.length)})
