@@ -22,6 +22,8 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - **Appka:** React 19 + Vite + TypeScript, `react-router-dom`, ikony `lucide-react`, PWA cez `vite-plugin-pwa` (manifest, service worker, automatická aktualizácia).
 - **Hosting:** Vercel, projekt `general` v účte **09deno**, prepojený s GitHub repom `09deno/general`. Každý push do vetvy = testovacia verzia, `main` = ostrá verzia. `vercel.json` presmeruje všetky adresy na appku. Ostrá adresa má byť náhodná: **`dccf2f4b.vercel.app`** (majiteľ ju nastavoval sám – over, či platí).
 - **Databáza + prihlásenie (pripravuje sa, krok 2.3):** Supabase, bezplatný plán, server **Frankfurt (EÚ)**. Prístup cez Supabase konektor v claude.ai.
+  - Fit denník má **vlastný Supabase účet** (iný e-mail ako hlavný účet majiteľa). Hlavný účet už má 2 aktívne bezplatné projekty (SideWage, interny-system-kit) a viac bezplatný plán nedovolí. **Konektor je prepojený na tento nový účet.** Hlavný účet nemeniť ani nepozastavovať.
+  - Projekt `fit-dennik` (región Frankfurt, `eu-central-1`) vytvorí Claude cez konektor, ak ho majiteľ ešte nezaložil – najprv over zoznamom projektov.
   - Free projekt sa po 7 dňoch bez používania uspí – prebudí sa jedným klikom v Supabase, dáta ostanú.
   - Súkromie: každý záznam patrí jednému používateľovi, prístup stráži Row Level Security priamo v databáze.
 - **Netlify nepoužívať:** konektor Netlify patrí účtu Web Sano (firemný web websano.sk) a bezplatný limit by sa delil s ním.
@@ -65,13 +67,17 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - [ ] Fáza 2 – kostra a prihlásenie
   - [x] 2.1 Kostra: navigácia Jedlo / Tréning / Progres / Nastavenia, prázdne sekcie (PR #1)
   - [x] 2.2 Appka na plochu: ikona, úvodné obrazovky, manifest, návod na pridanie (PR #2)
-  - [ ] 2.3 Databáza: Supabase projekt vo Frankfurte, prepojenie s appkou
+  - [ ] 2.3 Databáza: Supabase projekt vo Frankfurte, prepojenie s appkou ← **ďalší krok, pred začatím sa spýtaj na detaily**
   - [ ] 2.4 Registrácia (pozývací kód + prezývka + PIN), prihlásenie, odhlásenie
 - [ ] Fáza 3 – onboarding a výpočet cieľov
 - [ ] Fáza 4 – Jedlo
 - [ ] Fáza 5 – Tréning
 - [ ] Fáza 6 – Progres a grafy
 - [ ] Fáza 7 – Nastavenia, doladenie, prípadne sociálne funkcie (otázka, čo majú kamaráti navzájom vidieť – len sa spýtať, nestavať)
+
+### Čaká na majiteľa (pripomenúť)
+- Vyskúšať ostrú verziu na iPhone (`dccf2f4b.vercel.app`): pridať na plochu, skontrolovať ikonu, úvodnú obrazovku a horný pruh vo svetlom aj tmavom režime.
+- Povoliť v nastaveniach prostredia sieť pre adresy nižšie (ak ešte nie sú povolené – over `curl`om).
 
 ## Prostredie (cloud session)
 
