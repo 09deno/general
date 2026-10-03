@@ -535,7 +535,7 @@ function CustomExerciseForm(props: { initialName: string; onCancel: () => void; 
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="napr. Tlaky na šikmom stroji"
+          placeholder="napr. Incline Hammer Press"
           maxLength={60}
           autoComplete="off"
         />
