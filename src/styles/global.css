@@ -497,7 +497,7 @@ a {
   color: var(--text-muted);
 }
 
-.add-food__kcal {
+.field.add-food__kcal {
   height: 64px;
   font-size: 28px;
 }
@@ -545,7 +545,7 @@ a {
   color: var(--text-muted);
 }
 
-.macro-field__input {
+.field.macro-field__input {
   height: 52px;
   padding: 0 28px 0 12px;
   font-size: 18px;
@@ -553,6 +553,98 @@ a {
 
 .macro-field .number-field__unit {
   right: 12px;
+}
+
+.add-food__heading {
+  min-width: 0;
+}
+
+/* vyhľadávanie potravín */
+.search {
+  position: relative;
+  display: block;
+}
+
+.search__icon {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  color: var(--text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.field.search__input {
+  padding-left: 48px;
+}
+
+.search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.search__hint {
+  margin: 0 4px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.results {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--border);
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 12px 10px 16px;
+  border: 0;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.result__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.result__name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.result__info {
+  font-size: 13px;
+}
+
+/* hodnoty pre zvolené množstvo */
+.portion {
+  padding: 18px 20px 20px;
+}
+
+.portion__kcal {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 300;
+  line-height: 1.1;
+}
+
+.portion__kcal span {
+  font-size: 16px;
+  color: var(--glow-soft);
 }
 
 /* ---------- Spodná navigácia ---------- */
