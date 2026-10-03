@@ -1,12 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Plus, Trash2 } from 'lucide-react'
-import { deleteEntry, loadEntries, MEALS, parseDay, sumEntries, today, type FoodEntry } from '../lib/food'
+import { BookmarkPlus, Check, Plus, Trash2 } from 'lucide-react'
+import { deleteEntry, loadEntries, MEALS, parseDay, sumEntries, today, type FoodEntry, type Meal } from '../lib/food'
 import type { Targets } from '../lib/goals'
+import { saveRecipe } from '../lib/recipes'
 import DaySwitch from './DaySwitch'
 
 const grams = (value: number) => Number(value).toLocaleString('sk', { maximumFractionDigits: 1 })
 const percent = (value: number, target: number) => `${Math.min(100, target ? (value / target) * 100 : 0)}%`
+
+// predvolený názov uloženého jedla – dá sa prepísať
+const MY_MEAL: Record<Meal, string> = {
+  breakfast: 'Moje raňajky',
+  morning_snack: 'Moja desiata',
+  lunch: 'Môj obed',
+  afternoon_snack: 'Môj olovrant',
+  dinner: 'Moja večera',
+  snack: 'Môj snack',
+}
 
 // „150 g · B 4 g · S 42 g · T 0,5 g“ – množstvo a živiny, ak sú známe
 function details(entry: FoodEntry) {
@@ -27,6 +38,9 @@ export default function Food({ targets }: { targets: Targets }) {
   const [attempt, setAttempt] = useState(0)
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState('')
+  // uloženie jedla (napr. dnešných raňajok) pod názvom – potom sa pridá jedným ťuknutím
+  const [naming, setNaming] = useState<{ meal: Meal; name: string } | null>(null)
+  const [savedNotice, setSavedNotice] = useState('')
 
   useEffect(() => {
     let active = true
@@ -42,8 +56,31 @@ export default function Food({ targets }: { targets: Targets }) {
   const eaten = sumEntries(entries ?? [])
   const left = targets.kcal - eaten.kcal
 
+  const saveMeal = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!naming || !entries) return
+    const name = naming.name.trim().slice(0, 60)
+    if (!name) return
+    try {
+      await saveRecipe({
+        name,
+        portions: 1,
+        items: entries
+          .filter((entry) => entry.meal === naming.meal)
+          .map(({ name, kcal, protein_g, carbs_g, fat_g, grams, unit }) => ({ name, kcal, protein_g, carbs_g, fat_g, grams, unit })),
+      })
+      setNaming(null)
+      setDeleteError('')
+      setSavedNotice(`Uložené ako „${name}“ – nájdeš ho v Pridať jedlo medzi receptami.`)
+    } catch {
+      setDeleteError('Jedlo sa nepodarilo uložiť. Skontroluj internet a skús to znova.')
+    }
+  }
+
   const goToDay = (next: string) => {
     setConfirmId(null)
+    setNaming(null)
+    setSavedNotice('')
     setDeleteError('')
     setParams(next === today() ? {} : { den: next }, { replace: true })
   }
@@ -113,6 +150,11 @@ export default function Food({ targets }: { targets: Targets }) {
           {deleteError}
         </p>
       )}
+      {savedNotice && (
+        <p className="food__notice" role="status">
+          {savedNotice}
+        </p>
+      )}
       {entries?.length === 0 && <p className="food__empty">Zatiaľ nič. Ťukni na „Pridať jedlo“.</p>}
 
       {entries &&
@@ -123,8 +165,39 @@ export default function Food({ targets }: { targets: Targets }) {
             <section key={meal.value} className="meal">
               <h2 className="meal__heading">
                 <span>{meal.label}</span>
-                <span>{sumEntries(items).kcal.toLocaleString('sk')} kcal</span>
+                <span className="meal__kcal">{sumEntries(items).kcal.toLocaleString('sk')} kcal</span>
+                <button
+                  type="button"
+                  className="meal__save"
+                  onClick={() => {
+                    setSavedNotice('')
+                    setNaming({ meal: meal.value, name: MY_MEAL[meal.value] })
+                  }}
+                  aria-label={`Uložiť ${meal.label.toLowerCase()} ako jedlo`}
+                >
+                  <BookmarkPlus size={16} aria-hidden="true" />
+                  Uložiť
+                </button>
               </h2>
+              {naming?.meal === meal.value && (
+                <form className="meal__name" onSubmit={saveMeal}>
+                  <input
+                    className="field"
+                    type="text"
+                    value={naming.name}
+                    onChange={(event) => setNaming({ ...naming, name: event.target.value })}
+                    aria-label="Názov uloženého jedla"
+                    maxLength={60}
+                    autoFocus
+                  />
+                  <button type="submit" className="plan-day__icon" aria-label="Uložiť jedlo" disabled={!naming.name.trim()}>
+                    <Check size={20} aria-hidden="true" />
+                  </button>
+                  <button type="button" className="entry__cancel" onClick={() => setNaming(null)}>
+                    Nie
+                  </button>
+                </form>
+              )}
               <ul className="meal__list">
                 {items.map((entry) => (
                   <li key={entry.id} className="entry">
