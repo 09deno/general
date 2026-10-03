@@ -39,6 +39,39 @@ function food(
   }
 }
 
+// Jedlo z podniku: hodnoty na 1 kus alebo porciu. Hmotnosť kusu slúži len na prepočet,
+// keď niekto zadá vlastné množstvo – „1 ks“ dá presne hodnoty podniku.
+function piece(
+  name: string,
+  grams: number,
+  kcal: number,
+  protein: number,
+  carbs: number,
+  fat: number,
+  extra: Extra & { portions?: [string, number][]; label?: string } = {},
+): Food {
+  const per100 = (value: number) => Math.round((value / grams) * 1000) / 10
+  const portions = extra.portions ?? [[extra.label ?? '1 ks', grams]]
+  return food(name, per100(kcal), per100(protein), per100(carbs), per100(fat), portions, extra)
+}
+
+type Sauce = 'cream' | 'tomato' | 'pesto'
+
+// podiel kalórií z bielkovín, sacharidov a tukov podľa typu omáčky (odhad)
+const SAUCE_SPLIT: Record<Sauce, [number, number, number]> = {
+  cream: [0.14, 0.5, 0.36],
+  tomato: [0.15, 0.62, 0.23],
+  pesto: [0.1, 0.45, 0.45],
+}
+
+function leviathan(name: string, kcalPerPortion: number, portionGrams: number, sauce: Sauce): Food {
+  const [protein, carbs, fat] = SAUCE_SPLIT[sauce].map((share, i) => (kcalPerPortion * share) / (i === 2 ? 9 : 4))
+  return piece(`Leviathan ${name}`, portionGrams, kcalPerPortion, protein, carbs, fat, {
+    aliases: 'leviathan cestoviny spagety europa',
+    portions: [['malá', 400], ['stredná', 600], ['veľká', 800]],
+  })
+}
+
 export const FOODS: Food[] = [
   // ---------- Pečivo, prílohy, obilniny ----------
   food('Chlieb', 250, 8.5, 49, 1.5, [['1 krajec', 40]], { aliases: 'kváskový konzumný' }),
@@ -343,6 +376,120 @@ export const FOODS: Food[] = [
   food('Šalát Caesar', 160, 10, 6, 11, [['1 porcia', 300]], { aliases: 'salat cezar' }),
   food('Grécky šalát', 100, 3.5, 5, 8, [['1 porcia', 300]], { aliases: 'salat' }),
   food('Tuniakový šalát', 140, 12, 5, 8, [['1 porcia', 250]], { aliases: 'salat' }),
+
+  // ---------- Podniky v Banskej Bystrici ----------
+  // McDonald's: oficiálne hodnoty z mcdonalds.sk (2026); hmotnosti kusov sú približné.
+  piece("McDonald's Big Mac", 219, 510, 24.7, 40.4, 27.1, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's Big Arch", 330, 990, 54, 47, 65, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's McRoyal", 200, 501, 29, 35, 27, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's McRoyal Double", 272, 798, 54, 38, 47, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's Double Cheeseburger", 165, 457, 27, 31, 24, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's Cheeseburger", 118, 306, 16, 30, 13, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's Hamburger", 104, 258, 13, 29, 9.4, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's Big Tasty Bacon", 250, 691, 31, 42, 42, { aliases: 'mcdonalds mekac burger' }),
+  piece("McDonald's McChicken", 167, 427, 20, 45, 17, { aliases: 'mcdonalds mekac kuracie burger' }),
+  piece("McDonald's Chickenburger", 130, 277, 10, 41, 8, { aliases: 'mcdonalds mekac kuracie burger' }),
+  piece("McDonald's McCrispy Creamy BBQ", 210, 522, 24, 54, 22, { aliases: 'mcdonalds mekac kuracie burger' }),
+  piece("McDonald's Chicken McNuggets", 96, 262, 16, 21, 12, {
+    aliases: 'mcdonalds mekac nugetky nuggets',
+    portions: [['4 ks', 64], ['6 ks', 96], ['9 ks', 144], ['20 ks', 320]],
+  }),
+  piece("McDonald's Chicken Strips", 90, 217, 14, 19, 10, {
+    aliases: 'mcdonalds mekac stripsy',
+    portions: [['2 ks', 90], ['4 ks', 180]],
+  }),
+  piece("McDonald's Creamy BBQ Chicken McWrap", 230, 510, 22, 52, 24, { aliases: 'mcdonalds mekac wrap' }),
+  piece("McDonald's Honey Mustard Chicken McWrap", 230, 543, 21, 53, 28, { aliases: 'mcdonalds mekac wrap' }),
+  piece("McDonald's Snack Wrap", 100, 236, 10, 28, 9, { aliases: 'mcdonalds mekac wrap' }),
+  piece("McDonald's Crispy Chicken šalát", 300, 374, 21, 35, 15.7, { label: '1 porcia', aliases: 'mcdonalds mekac salat' }),
+  piece("McDonald's hranolky", 114, 327, 4, 41, 15, {
+    aliases: 'mcdonalds mekac hranolky',
+    portions: [['malé', 80], ['stredné', 114], ['veľké', 150]],
+  }),
+  piece("McDonald's McFlurry KitKat", 185, 314, 6, 47, 11, { aliases: 'mcdonalds mekac zmrzlina dezert' }),
+  piece("McDonald's Milk Shake vanilkový", 250, 199, 5.2, 36, 3.7, {
+    unit: 'ml',
+    aliases: 'mcdonalds mekac shake',
+    portions: [['malý', 250], ['veľký', 400]],
+  }),
+  piece("McDonald's jablková taštička", 80, 228, 2.3, 28, 12, { aliases: 'mcdonalds mekac dezert' }),
+
+  // KFC: oficiálna tabuľka nutričných hodnôt KFC (AmRest, 2020); menu sa časom mení.
+  piece('KFC Original kúsok – stehno', 111, 301, 22, 9.3, 20, { aliases: 'kfc kura kuracie' }),
+  piece('KFC Original kúsok – prsia', 100, 236, 25, 7.8, 12, { aliases: 'kfc kura kuracie' }),
+  piece('KFC Original kúsok – krídlo', 65, 185, 15, 6.5, 11, { aliases: 'kfc kura kuracie' }),
+  piece('KFC Original kúsok – palička', 69, 170, 16, 5, 9.6, { aliases: 'kfc kura kuracie' }),
+  piece('KFC Hot Wings', 36, 108, 6, 3.5, 7.9, {
+    aliases: 'kfc kridla wings',
+    portions: [['1 ks', 36], ['5 ks', 180], ['8 ks', 288]],
+  }),
+  piece('KFC Hot & Spicy Strips', 32, 84, 4.9, 4.7, 5, {
+    aliases: 'kfc stripsy',
+    portions: [['1 ks', 32], ['3 ks', 96], ['5 ks', 160]],
+  }),
+  piece('KFC Hot & Spicy Bites', 90, 291, 17, 14, 18, { label: '1 porcia', aliases: 'kfc' }),
+  piece('KFC Zinger', 179, 484, 25, 41, 25, { aliases: 'kfc burger' }),
+  piece('KFC Double Zinger', 240, 590, 41, 41, 29, { aliases: 'kfc burger' }),
+  piece('KFC Zinger Grill', 160, 344, 35, 21, 13, { aliases: 'kfc burger' }),
+  piece('KFC Longer', 127, 306, 12, 42, 10, { aliases: 'kfc burger' }),
+  piece('KFC Filler', 130, 317, 15, 28, 16, { aliases: 'kfc burger' }),
+  piece('KFC Twister Classic', 226, 540, 19, 52, 28, { aliases: 'kfc wrap tortilla' }),
+  piece('KFC Twister Grill', 213, 409, 28, 40, 15, { aliases: 'kfc wrap tortilla' }),
+  piece('KFC iTwist Classic', 132, 326, 11, 36, 15, { aliases: 'kfc wrap tortilla' }),
+  piece('KFC Qurrito', 230, 648, 35, 59, 31, { aliases: 'kfc wrap' }),
+  piece('KFC hranolky', 70, 179, 2.7, 24, 7.7, {
+    aliases: 'kfc hranolky',
+    portions: [['malé', 70], ['veľké', 105], ['kýblik', 240]],
+  }),
+  piece('KFC Kentucky Fries', 150, 425, 8, 45, 25, { label: '1 porcia', aliases: 'kfc hranolky' }),
+  piece('KFC zemiaková kaša s omáčkou', 220, 117, 3.3, 22, 1.3, { label: '1 porcia', aliases: 'kfc kasa' }),
+  piece('KFC Coleslaw', 140, 141, 1, 13, 10, { label: '1 porcia', aliases: 'kfc salat' }),
+  piece('KFC kukurica s maslom', 250, 315, 8.3, 49, 9.5, { aliases: 'kfc' }),
+
+  // Leviathan (špagety, Europa SC): kalórie na porciu zo stránky leviathan.sk; bielkoviny, sacharidy
+  // a tuky sú odhad podľa zloženia omáčky. Porcie 400 / 600 / 800 g.
+  ...[
+    ['„Leviathan“ (smotanovo-syrová, gorgonzola, kura, olivy)', 461, 'cream'],
+    ['Formaggi (smotanovo-syrová, slanina)', 546, 'cream'],
+    ['Alla Funghi (smotanovo-syrová, šampiňóny)', 424, 'cream'],
+    ['Broccoli (smotanovo-syrová, brokolica)', 400, 'cream'],
+    ['Spinaci (smotanovo-syrová, špenát)', 402, 'cream'],
+    ['Bolognese (paradajková, mleté mäso, slanina)', 451, 'tomato'],
+    ['Arrabiata (paradajková, chilli)', 370, 'tomato'],
+    ['Alla Tono (paradajková, tuniak)', 419, 'tomato'],
+    ['Salsa di Pollo (paradajková, kura, fazuľa, kukurica)', 392, 'tomato'],
+  ].map(([name, kcal, base]) => leviathan(name as string, kcal as number, 400, base as Sauce)),
+  ...[
+    ['Pesto Genovese (bazalka, parmezán)', 527],
+    ['Pesto Aglio Olio (petržlen, cesnak, chilli)', 605],
+    ['Pesto Siciliana (sušené paradajky, slnečnica)', 419],
+    ['Pesto Rosso (sušené paradajky, olivy, chilli)', 333],
+  ].map(([name, kcal]) => leviathan(name as string, kcal as number, 300, 'pesto')),
+
+  // Wakaka Poke&Bowl (Europa SC): podnik hodnoty neuvádza – odhad podľa zloženia a bežnej veľkosti porcie.
+  piece('Wakaka bowl chicken steak', 480, 665, 44, 74, 20, { label: '1 bowl', aliases: 'wakaka poke bowl kura europa' }),
+  piece('Wakaka bowl teriyaki chicken', 460, 600, 36, 90, 12, { label: '1 bowl', aliases: 'wakaka poke bowl kura europa' }),
+  piece('Wakaka bowl crispy chicken', 480, 710, 32, 92, 24, { label: '1 bowl', aliases: 'wakaka poke bowl kura europa' }),
+  piece('Wakaka bowl kung bao chicken', 450, 560, 29, 80, 14, { label: '1 bowl', aliases: 'wakaka poke bowl kura europa kung pao' }),
+  piece('Wakaka bowl orange chicken', 500, 750, 32, 105, 22, { label: '1 bowl', aliases: 'wakaka poke bowl kura europa' }),
+  piece('Wakaka bowl spicy beef', 450, 595, 36, 70, 19, { label: '1 bowl', aliases: 'wakaka poke bowl hovadzie europa' }),
+  piece('Wakaka bowl crispy duck', 480, 780, 30, 85, 34, { label: '1 bowl', aliases: 'wakaka poke bowl kacica europa' }),
+  piece('Wakaka bowl sesame salmon', 500, 740, 32, 90, 27, { label: '1 bowl', aliases: 'wakaka poke bowl losos europa' }),
+  piece('Wakaka bowl royal tuna', 500, 650, 34, 90, 18, { label: '1 bowl', aliases: 'wakaka poke bowl tuniak europa' }),
+  piece('Wakaka bowl tempura shrimp', 500, 800, 24, 110, 30, { label: '1 bowl', aliases: 'wakaka poke bowl krevety europa' }),
+  piece('Wakaka bowl shrimp taste', 480, 600, 33, 92, 13, { label: '1 bowl', aliases: 'wakaka poke bowl krevety europa' }),
+  piece('Wakaka bowl vegan', 450, 505, 10, 85, 14, { label: '1 bowl', aliases: 'wakaka poke bowl europa vegánsky' }),
+  piece('Wakaka Salmon Maki (6 ks)', 110, 180, 7, 30, 3, { label: '6 ks', aliases: 'wakaka sushi maki losos' }),
+  piece('Wakaka Avokádo Maki (6 ks)', 110, 170, 3, 32, 4, { label: '6 ks', aliases: 'wakaka sushi maki' }),
+  piece('Wakaka Kappa Maki (6 ks)', 100, 140, 3, 30, 0.5, { label: '6 ks', aliases: 'wakaka sushi maki uhorka' }),
+  piece('Wakaka Salmon Nigiri', 35, 60, 3.5, 8, 1.5, { aliases: 'wakaka sushi nigiri losos' }),
+  piece('Wakaka Salmon Roll', 220, 350, 14, 50, 10, { label: '1 rolka', aliases: 'wakaka sushi roll losos' }),
+  piece('Wakaka California Roll', 200, 300, 9, 45, 9, { label: '1 rolka', aliases: 'wakaka sushi roll' }),
+  piece('Wakaka Philadelphia Roll', 240, 420, 15, 50, 17, { label: '1 rolka', aliases: 'wakaka sushi roll' }),
+  piece('Wakaka Ebi Tempura Roll', 240, 450, 13, 60, 17, { label: '1 rolka', aliases: 'wakaka sushi roll krevety' }),
+  piece('Wakaka sushi set alpha', 380, 650, 30, 96, 16, { label: '1 set', aliases: 'wakaka sushi set' }),
+  piece('Wakaka polievka Tom-Yum', 350, 200, 10, 10, 13, { label: '1 porcia', unit: 'ml', aliases: 'wakaka polievka tom yum' }),
+  piece('Wakaka ostro-kyslá polievka', 350, 150, 10, 14, 6, { label: '1 porcia', unit: 'ml', aliases: 'wakaka polievka' }),
 ]
 
 // bez diakritiky a malými písmenami, aby „ryza“ našlo „Ryža“
@@ -359,7 +506,7 @@ const INDEX = FOODS.map((item) => {
 
 // Každé napísané slovo musí začínať niektoré slovo názvu (alebo iného názvu), aby „cina“ nenašlo „Lučinu“;
 // ak sa tak nenájde nič, stačí, keď je kdekoľvek v názve. Navrchu sú jedlá, ktorých názov tak začína.
-export function searchFoods(query: string, limit = 25): Food[] {
+export function searchFoods(query: string, limit = 40): Food[] {
   const words = plain(query).split(/\s+/).filter(Boolean)
   if (words.length === 0) return []
   let found = INDEX.filter((entry) => words.every((word) => entry.parts.some((part) => part.startsWith(word))))

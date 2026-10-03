@@ -207,6 +207,7 @@ export default function AddFood() {
             <FoodSearch
               placeholder="Hľadaj, napr. ryža, vajce, guláš"
               hint="Napíš názov potraviny alebo jedla. Sú tu aj varené jedlá z jedálne či reštaurácie – napr. guláš, rezeň, pizza, kebab. Po výbere môžeš pridať aj prísady."
+              places
               onPick={(food) => setBase({ food, grams: defaultAmount(food) })}
             />
             <button type="button" className="text-button" onClick={() => setManual(true)}>
@@ -219,7 +220,10 @@ export default function AddFood() {
   )
 }
 
-function FoodSearch(props: { placeholder: string; hint?: string; onPick: (food: Food) => void }) {
+// podniky v Banskej Bystrici, kam chodí partia – ťuknutím sa ukážu ich jedlá
+const PLACES = ['Wakaka', 'KFC', "McDonald's", 'Leviathan']
+
+function FoodSearch(props: { placeholder: string; hint?: string; places?: boolean; onPick: (food: Food) => void }) {
   const [query, setQuery] = useState('')
   const results = searchFoods(query)
 
@@ -240,7 +244,21 @@ function FoodSearch(props: { placeholder: string; hint?: string; onPick: (food: 
       </label>
 
       {query.trim() === '' ? (
-        props.hint && <p className="search__hint">{props.hint}</p>
+        <>
+          {props.hint && <p className="search__hint">{props.hint}</p>}
+          {props.places && (
+            <div className="add-food__group">
+              <span className="add-food__label">Podniky v Banskej Bystrici</span>
+              <div className="chips">
+                {PLACES.map((place) => (
+                  <button key={place} type="button" className="chip" onClick={() => setQuery(place)}>
+                    {place}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       ) : results.length === 0 ? (
         <p className="search__hint">Nič sa nenašlo. Skús iné slovo.</p>
       ) : (
@@ -251,8 +269,10 @@ function FoodSearch(props: { placeholder: string; hint?: string; onPick: (food: 
                 <span className="result__text">
                   <span className="result__name">{item.name}</span>
                   <span className="result__info">
-                    {item.kcal} kcal na 100 {item.unit}
-                    {item.portions[0] && ` · ${item.portions[0].label} ${item.portions[0].grams} ${item.unit}`}
+                    {/* kalórie pre bežnú porciu – začiatočník lepšie pozná „1 porcia“ než 100 g */}
+                    {item.portions[0]
+                      ? `${item.portions[0].label} (${item.portions[0].grams} ${item.unit}) · ${nutrition(item, item.portions[0].grams).kcal} kcal`
+                      : `100 ${item.unit} · ${item.kcal} kcal`}
                   </span>
                 </span>
                 <ChevronRight size={20} aria-hidden="true" />

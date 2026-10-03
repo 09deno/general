@@ -62,9 +62,14 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - Prepínanie dní šípkami (spätný zápis áno, do budúcnosti nie); deň je v adrese `/jedlo?den=YYYY-MM-DD`. Zoznam podľa jedál so súčtom; mazanie ikonou koša s potvrdením „Zmazať? / Nie“.
 - Uloženie: tabuľka `food_entries` (deň podľa Europe/Bratislava), každý vidí, pridáva a maže len svoje.
 - **Prísady k jedlu:** po výbere jedla „+ Pridať prísadu“ (napr. cestoviny + paradajková omáčka + parmezán); uloží sa **ako jeden riadok** so súčtom (rozhodol majiteľ), názov „A + B + C“.
-- Zoznam potravín (`src/data/foods.ts`, ~280 položiek vrátane omáčok a prísad): bežné potraviny **aj varené jedlá** zo školskej jedálne, reštaurácie a rozvozu (guláš, sviečková, rezeň, halušky, pizza, kebab…) s porciami („1 ks“, „1 porcia“, „1 tanier“ + „100 g“). Orientačné hodnoty na 100 g / 100 ml; vyhľadávanie bez diakritiky a aj podľa iných názvov. Pri zápise sa ukladá aj množstvo (`grams`) a jednotka (`unit` g/ml). Čo sa nenájde, zadá sa ručne.
+- Zoznam potravín (`src/data/foods.ts`, ~355 položiek vrátane omáčok, prísad a jedál z podnikov): bežné potraviny **aj varené jedlá** zo školskej jedálne, reštaurácie a rozvozu (guláš, sviečková, rezeň, halušky, pizza, kebab…) s porciami („1 ks“, „1 porcia“, „1 tanier“ + „100 g“). Orientačné hodnoty na 100 g / 100 ml; vyhľadávanie bez diakritiky a aj podľa iných názvov. Pri zápise sa ukladá aj množstvo (`grams`) a jednotka (`unit` g/ml). Čo sa nenájde, zadá sa ručne.
 - **Fotka jedla** (odhad kalórií z fotky): len s umelou inteligenciou, stojí cca 1–2 centy za fotku a je to len odhad. Majiteľ chce **neskôr ako samostatný krok** – bude treba jeho účet u Anthropicu s kreditom (~5 $); kľúč si vloží sám do Supabase (Edge Functions → Secrets), nikdy nie do chatu ani repa.
-- **Podniky v Banskej Bystrici** (majiteľ a kamaráti tam študujú): Wakaka Poke&Bowl (Europa SC – napr. bowl „chicken steak“), KFC (Europa), McDonald's, Leviathan (špagety, Europa). Reťazce zverejňujú hodnoty; pri ostatných sú kalórie odhad podľa bežnej porcie (gramáže neuvádzajú).
+- **Podniky v Banskej Bystrici** (majiteľ a kamaráti tam študujú) – v zozname s rýchlymi tlačidlami „Podniky v Banskej Bystrici“:
+  - **McDonald's** – oficiálne hodnoty na kus z mcdonalds.sk (2026), presne sedia;
+  - **KFC** – oficiálna tabuľka KFC (AmRest, 2020; menu sa mení – aktualizovať, keď bude novšia);
+  - **Leviathan** (špagety, Europa SC) – kalórie na porciu z leviathan.sk, bielkoviny/sacharidy/tuky odhad podľa omáčky; porcie 400/600/800 g;
+  - **Wakaka Poke&Bowl** (Europa SC) – hodnoty neuvádza, všetko **odhad** podľa zloženia a bežnej porcie (bowl ~450–500 g).
+  - Jedlo z podniku sa zadáva helperom `piece()` – hodnoty na 1 kus/porciu, hmotnosť kusu len na prepočet.
 - Fáza 4 po krokoch: 4.1 obrazovka + ručné pridanie → 4.2 vyhľadávanie potravín a varených jedál s gramami → 4.3 prísady + viac jedál → 4.4 jedlá z podnikov v BB → 4.5 najčastejšie jedlá → 4.6 čiarový kód → 4.7 (neskôr) fotka jedla s AI.
 - Sledujeme **kcal, bielkoviny, sacharidy aj tuky**. Výrazne zobrazovať „Zostáva X kcal“ (aby každý vedel, koľko si ešte môže dovoliť). Cukor a soľ zvlášť nesledujeme.
 - Zdroje potravín: skenovanie čiarových kódov kamerou + bezplatná databáza **Open Food Facts**, vlastný zoznam ~100 bežných nebalených potravín (orientačné hodnoty z verejných tabuliek), čo sa nenájde, zadá sa raz ručne a appka si to zapamätá.
@@ -101,7 +106,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 4.1 Obrazovka Jedlo („Zostáva X kcal“, makroživiny, dni, zoznam podľa jedál, mazanie) a ručné pridanie jedla (PR #10)
   - [x] 4.2 Vyhľadávanie ~150 potravín a varených jedál, gramy/ml a rýchle tlačidlá („1 ks“, „1 porcia“, „100 g“), Snack medzi jedlami (PR #11)
   - [x] 4.3 Prísady k jedlu (jeden riadok so súčtom) a rozšírený zoznam na ~280 položiek (PR #12)
-  - [ ] 4.4 Jedlá z podnikov v Banskej Bystrici (Wakaka, KFC, McDonald's, Leviathan)
+  - [x] 4.4 Jedlá z podnikov v Banskej Bystrici (Wakaka, KFC, McDonald's, Leviathan) s rýchlymi tlačidlami (PR #12)
   - [ ] 4.5 Vlastné jedlá a najčastejšie jedlá jedným ťuknutím
   - [ ] 4.6 Skenovanie čiarového kódu + Open Food Facts
   - [ ] 4.7 (neskôr, platené) Fotka jedla – odhad kalórií umelou inteligenciou
