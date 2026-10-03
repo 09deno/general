@@ -71,6 +71,33 @@ export function lastSets(recent: Workout[], key: string, except?: string): { day
   return null
 }
 
+// Výkon v jednom tréningu = najlepšia séria. Kilá aj opakovania sa zrátajú do jedného čísla
+// (odhad maxima na 1 opakovanie: kg × (1 + opakovania / 30)), takže 60 × 10 je viac ako 60 × 8.
+// Pri vlastnej váhe sa telo ráta ako 75 kg – na porovnanie vlastných tréningov stačí.
+function best(kind: ExerciseKind, sets: WorkoutSet[]): number {
+  return Math.max(
+    ...sets.map((set) => {
+      if (kind === 'time') return set.seconds ?? 0
+      const kg = kind === 'bodyweight' ? 75 + (set.kg ?? 0) : (set.kg ?? 0)
+      return kg * (1 + (set.reps ?? 0) / 30)
+    }),
+  )
+}
+
+// Stagnácia: cvik 3 tréningy po sebe nešiel hore – dva najnovšie nie sú lepšie ako ten pred nimi.
+export function stagnates(recent: Workout[], key: string, kind: ExerciseKind, except?: string): boolean {
+  const scores: number[] = []
+  for (const workout of recent) {
+    if (workout.id === except) continue
+    const exercise = workout.exercises.find((item) => item.key === key)
+    const sets = exercise ? doneSets(exercise) : []
+    if (sets.length > 0) scores.push(best(kind, sets))
+    if (scores.length === 3) break
+  }
+  // scores[0] je najnovší tréning
+  return scores.length === 3 && Math.max(scores[0], scores[1]) <= scores[2]
+}
+
 // série na začiatok tréningu: ako minule (bez ✓), cvik robený prvýkrát 3 prázdne
 export function startSets(previous: WorkoutSet[] | undefined): WorkoutSet[] {
   if (previous?.length) return previous.map((set) => ({ ...set, done: false }))
