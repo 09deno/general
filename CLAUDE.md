@@ -85,6 +85,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - **Zápis tréningu** (`/trening/zapis/<id>`): cviky podľa dňa plánu. Série sú **predvyplnené z minulého tréningu** toho cviku (len odcvičené série), cvik robený prvýkrát má **3 prázdne série** (rozhodol majiteľ). Nad sériami „Minule (deň): 60 kg × 10 · …“. Odcvičenú sériu odškrtne **✓** – dá sa, až keď je vyplnené: činka/stroj kg aj opakovania, vlastná váha opakovania (+ nepovinne „navyše kg“), na čas sekundy. „+ Pridať sériu“ (s hodnotami predošlej) a „Odobrať sériu“ (poslednú). Kg s desatinnou čiarkou (22,5).
 - Zápis sa **ukladá priebežne** (aj pri prepnutí do inej appky), nič sa nestratí, keď iPhone appku zavrie. „Ukončiť tréning“ vráti na prehľad; tréning bez jedinej ✓ sa zmaže. Zapísaný tréning na prehľade ukazuje odcvičené série, „Pokračovať v tréningu“ (dnes) / „Upraviť tréning“ (iný deň) a mazanie s potvrdením.
 - Uloženie: tabuľka `workouts` (deň, `plan_day_id`, názov dňa, cviky ako JSON – kľúč, názov, partia, druh a série `{kg, reps, seconds, done}`; názov sa ukladá, aby história ostala aj po zmene plánu); každý vidí len svoje. Do minulého výkonu a návrhu dňa sa berie posledných 60 tréningov.
+- **Upozornenie na stagnáciu** (želanie majiteľa): pri cviku v zápise sa pod „Minule“ ukáže oranžová rada, keď cvik **3 tréningy po sebe nešiel hore** (dva najnovšie nie sú lepšie ako ten pred nimi). Výkon tréningu = najlepšia séria; kilá a opakovania sa zrátajú do jedného čísla (odhad maxima na 1 opakovanie kg × (1 + opakovania / 30)), pri vlastnej váhe sa telo ráta ako 75 kg, pri cviku na čas sekundy. Rada: činka „pridať 2,5 kg alebo 1 opakovanie“, vlastná váha „o 1 opakovanie viac“, na čas „o 5 sekúnd dlhšie“. Ďalšie navrhnuté merania (súhrn po tréningu, série na partie za týždeň, pravidelnosť) majiteľ zatiaľ nechcel.
 - Tréningy **nepridávajú kalórie** k „Zostáva X kcal“ – denný cieľ už počíta s aktivitou (rozhodol majiteľ).
 - Fáza 5 po krokoch: 5.1 plán (split) a cviky → 5.2 zápis tréningu podľa dňa plánu (série opakovania × kg, minulý výkon a predvyplnenie) → 5.3 šport/iné (druh + minúty) a história tréningov.
 
@@ -126,6 +127,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - [ ] Fáza 5 – Tréning
   - [x] 5.1 Tréningový plán: vlastný split na pár ťuknutí alebo 11 hotových, dni, 118 cvikov s anglickými názvami a vlastné cviky (PR #15)
   - [x] 5.2 Zápis tréningu podľa dňa plánu: návrh ďalšieho dňa, série predvyplnené z minula s ✓, spätný zápis (PR #16)
+  - [x] Upozornenie na stagnáciu pri cviku (PR #17)
   - [ ] 5.3 Šport a iné (druh + minúty), história tréningov
 - [ ] Fáza 6 – Progres a grafy
 - [ ] Fáza 7 – Nastavenia, doladenie, prípadne sociálne funkcie (otázka, čo majú kamaráti navzájom vidieť – len sa spýtať, nestavať)

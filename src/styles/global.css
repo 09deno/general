@@ -974,6 +974,27 @@ a {
   color: var(--text-muted);
 }
 
+/* cvik 3 tréningy po sebe nešiel hore */
+.workout-exercise__tip {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 107, 44, 0.12);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.workout-exercise__tip svg {
+  flex: none;
+  color: var(--orange);
+}
+
+.workout-exercise__tip b {
+  font-weight: 600;
+}
+
 .sets {
   display: grid;
   gap: 6px;

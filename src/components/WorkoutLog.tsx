@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check } from 'lucide-react'
+import { ArrowLeft, Check, TrendingUp } from 'lucide-react'
 import { GROUP_LABELS, type ExerciseKind } from '../data/exercises'
 import { dayLabel, today } from '../lib/food'
 import {
@@ -11,6 +11,7 @@ import {
   loadWorkout,
   saveExercises,
   setLabel,
+  stagnates,
   type Workout,
   type WorkoutExercise,
   type WorkoutSet,
@@ -180,6 +181,7 @@ export default function WorkoutLog() {
               key={exercise.key}
               exercise={exercise}
               last={lastSets(recent, exercise.key, workout.id)}
+              stuck={stagnates(recent, exercise.key, exercise.kind, workout.id)}
               onChange={(change) => update(index, change)}
             />
           ))}
@@ -207,9 +209,17 @@ const HEADINGS: Record<ExerciseKind, string[]> = {
   time: ['sekundy'],
 }
 
+// rada, keď cvik 3 tréningy po sebe nešiel hore
+const TIPS: Record<ExerciseKind, string> = {
+  weight: 'Skús dnes pridať 2,5 kg alebo 1 opakovanie.',
+  bodyweight: 'Skús dnes o 1 opakovanie viac.',
+  time: 'Skús dnes vydržať o 5 sekúnd dlhšie.',
+}
+
 function ExerciseSets(props: {
   exercise: DraftExercise
   last: { day: string; sets: WorkoutSet[] } | null
+  stuck: boolean
   onChange: (change: (exercise: DraftExercise) => DraftExercise) => void
 }) {
   const { exercise, last, onChange } = props
@@ -239,6 +249,14 @@ function ExerciseSets(props: {
       {last && (
         <p className="workout-exercise__last">
           Minule ({dayLabel(last.day)}): {last.sets.map((set) => setLabel(kind, set)).join(' · ')}
+        </p>
+      )}
+      {props.stuck && (
+        <p className="workout-exercise__tip">
+          <TrendingUp size={18} aria-hidden="true" />
+          <span>
+            <b>3 tréningy bez zlepšenia.</b> {TIPS[kind]}
+          </span>
         </p>
       )}
 
