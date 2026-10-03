@@ -2,38 +2,52 @@
 :root {
   color-scheme: light dark;
 
-  --font-body: 'Barlow', system-ui, sans-serif;
-  --font-display: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+  --font: 'Sora', system-ui, sans-serif;
 
-  --volt: #d2ff3c;
-  --ember: #ff5a1f;
+  --violet: #8b5cf6;
+  --orange: #f25a1d;
+  --pink: #e0559f;
 
-  --backdrop: #e6e6df;
-  --bg: #f3f3ee;
+  --backdrop: #e7e4ef;
+  --bg: #f3f1f8;
   --surface: #ffffff;
-  --border: #dadad0;
-  --text: #121315;
-  --text-muted: #5c6167;
-  --accent: var(--volt);
-  --on-accent: #121315;
-  --accent-ink: #4c6b00; /* akcentová farba pre text na svetlom pozadí */
+  --border: rgba(24, 16, 48, 0.08);
+  --text: #15121d;
+  --text-muted: #686479;
+  --violet-ink: #5b2fd6; /* fialová pre text na svetlom pozadí */
+  --nav-bg: rgba(255, 255, 255, 0.88);
+  --nav-active: #7c4dff;
+
+  /* tmavá „hlavná“ karta s fialovou žiarou – rovnaká v oboch režimoch */
+  --glow-bg: #0e0e13;
+  --glow-text: #f4f2fa;
+  --glow-soft: #bdb9cc;
+  --glow-label: #b49cff;
+  --glow-border: rgba(139, 92, 246, 0.35);
+  --glow: rgba(124, 58, 237, 0.7);
 
   --nav-height: 72px;
-  --radius: 18px;
+  --radius: 24px;
   --column: 480px;
 }
 
 /* ---------- Tmavý režim ---------- */
 @media (prefers-color-scheme: dark) {
   :root {
-    --backdrop: #08090a;
-    --bg: #0f1012;
-    --surface: #1a1c1f;
-    --border: #2b2f34;
-    --text: #f3f4ef;
-    --text-muted: #9ba1a7;
-    --on-accent: #0f1012;
-    --accent-ink: var(--volt);
+    --orange: #ff6b2c;
+    --pink: #f472b6;
+
+    --backdrop: #000000;
+    --bg: #050507;
+    --surface: #0e0e13;
+    --border: rgba(255, 255, 255, 0.07);
+    --text: #f4f2fa;
+    --text-muted: #8e8aa0;
+    --violet-ink: #b49cff;
+    --nav-bg: rgba(10, 10, 14, 0.86);
+    --nav-active: #b49cff;
+
+    --glow: rgba(124, 58, 237, 0.62);
   }
 }
 
@@ -53,16 +67,17 @@ body {
   min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.45;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
 
 :focus-visible {
-  outline: 3px solid var(--accent-ink);
-  outline-offset: 2px;
+  outline: 2px solid var(--nav-active);
+  outline-offset: 3px;
+  border-radius: 12px;
 }
 
 /* ---------- Stĺpec appky (na počítači v strede) ---------- */
@@ -90,63 +105,62 @@ body {
 }
 
 .screen__header {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
-.brand-tag {
-  display: inline-block;
-  padding: 4px 16px;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.14em;
+.brand {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  color: var(--violet-ink);
 }
 
 .screen__title {
   margin: 14px 0 0;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 60px;
-  line-height: 0.95;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
 }
 
-/* ---------- Dočasná karta „Pripravujeme“ ---------- */
-.placeholder {
+/* ---------- Karty ---------- */
+.card {
   position: relative;
   overflow: hidden;
-  padding: 30px 20px 22px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
 
-/* šikmé pruhy ako na športovej páske */
-.placeholder::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 10px;
-  background: repeating-linear-gradient(-45deg, var(--accent) 0 8px, transparent 8px 16px);
+/* tmavá karta s fialovou žiarou zospodu */
+.card--glow {
+  background:
+    radial-gradient(120% 90% at 25% 130%, var(--glow), transparent 65%),
+    radial-gradient(60% 60% at 100% 0%, rgba(139, 92, 246, 0.16), transparent 70%),
+    var(--glow-bg);
+  border-color: var(--glow-border);
+  color: var(--glow-text);
 }
 
-.placeholder__badge {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.1em;
+/* ---------- Dočasná karta „Pripravujeme“ ---------- */
+.placeholder {
+  padding: 22px 20px 26px;
+}
+
+.placeholder__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent-ink);
+  color: var(--glow-label);
 }
 
 .placeholder__text {
-  margin: 6px 0 0;
-  color: var(--text-muted);
+  margin: 8px 0 0;
+  font-weight: 300;
+  font-size: 17px;
+  color: var(--glow-soft);
 }
 
 /* ---------- Spodná navigácia ---------- */
@@ -160,55 +174,34 @@ body {
   width: 100%;
   max-width: var(--column);
   padding-bottom: env(safe-area-inset-bottom);
-  background: var(--surface);
+  background: var(--nav-bg);
   border-top: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
   transform: translateX(-50%);
 }
 
 .bottom-nav__link {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   height: var(--nav-height);
   color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
   text-decoration: none;
   user-select: none;
 }
 
 .bottom-nav__icon {
-  position: relative;
   display: grid;
   place-items: center;
-  width: 58px;
-  height: 32px;
-}
-
-/* šikmá limetková „visačka“ pod ikonou aktívnej záložky */
-.bottom-nav__icon::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
-  opacity: 0;
-  transform: scaleX(0.5);
   transition:
-    opacity 0.15s ease,
-    transform 0.2s ease;
-}
-
-.bottom-nav__icon svg {
-  position: relative;
-}
-
-.bottom-nav__label {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+    color 0.15s ease,
+    filter 0.15s ease;
 }
 
 .bottom-nav__link.active {
@@ -216,16 +209,24 @@ body {
 }
 
 .bottom-nav__link.active .bottom-nav__icon {
-  color: var(--on-accent);
+  color: var(--nav-active);
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.8));
 }
 
-.bottom-nav__link.active .bottom-nav__icon::before {
-  opacity: 1;
-  transform: scaleX(1);
+/* svietiaca bodka pod aktívnou záložkou */
+.bottom-nav__link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--nav-active);
+  box-shadow: 0 0 8px var(--violet);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bottom-nav__icon::before {
+  .bottom-nav__icon {
     transition: none;
   }
 }

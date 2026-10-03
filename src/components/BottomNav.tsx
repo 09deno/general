@@ -7,7 +7,7 @@ export default function BottomNav() {
       {tabs.map(({ path, label, icon: Icon }) => (
         <NavLink key={path} to={path} className="bottom-nav__link">
           <span className="bottom-nav__icon">
-            <Icon size={24} strokeWidth={2.25} aria-hidden="true" />
+            <Icon size={24} strokeWidth={2} aria-hidden="true" />
           </span>
           <span className="bottom-nav__label">{label}</span>
         </NavLink>
