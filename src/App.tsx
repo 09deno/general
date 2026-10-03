@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import AddFood from './components/AddFood'
 import BottomNav from './components/BottomNav'
+import Food from './components/Food'
 import InstallGuide from './components/InstallGuide'
 import Login from './components/Login'
 import Onboarding from './components/Onboarding'
 import Screen from './components/Screen'
 import Settings from './components/Settings'
+import { targetsFromRow } from './lib/goals'
 import { useGoals } from './lib/useGoals'
 import { useSession } from './lib/useSession'
 import { tabs } from './tabs'
@@ -54,7 +57,9 @@ function SignedIn({ userId }: { userId: string }) {
               key={tab.path}
               path={tab.path}
               element={
-                tab.path === '/nastavenia' ? (
+                tab.path === '/jedlo' ? (
+                  <Food targets={targetsFromRow(goals)} />
+                ) : tab.path === '/nastavenia' ? (
                   <Settings goals={goals} onChangeGoals={() => setChangingGoals(true)} />
                 ) : (
                   <Screen title={tab.label} description={tab.description} />
@@ -62,6 +67,7 @@ function SignedIn({ userId }: { userId: string }) {
               }
             />
           ))}
+          <Route path="/jedlo/pridat" element={<AddFood />} />
           <Route path="*" element={<Navigate to="/jedlo" replace />} />
         </Routes>
       </main>
