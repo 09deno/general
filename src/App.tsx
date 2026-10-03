@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import BottomNav from './components/BottomNav'
+import InstallGuide from './components/InstallGuide'
 import Screen from './components/Screen'
 import { tabs } from './tabs'
 
@@ -19,6 +20,7 @@ export default function App() {
         </Routes>
       </main>
       <BottomNav />
+      <InstallGuide />
     </div>
   )
 }
