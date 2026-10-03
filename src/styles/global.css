@@ -120,7 +120,7 @@ a {
   }
 
   .app,
-  .login {
+  .flow {
     border-inline: 1px solid var(--border);
   }
 }
@@ -303,8 +303,8 @@ a {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
 }
 
-/* ---------- Prihlásenie a registrácia ---------- */
-.login {
+/* ---------- Celoobrazovkový postup (prihlásenie, úvodné otázky) ---------- */
+.flow {
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -317,7 +317,7 @@ a {
     var(--bg);
 }
 
-.login__icon {
+.flow__icon {
   display: block;
   width: 56px;
   height: 56px;
@@ -325,7 +325,7 @@ a {
   box-shadow: 0 0 40px rgba(124, 58, 237, 0.45);
 }
 
-.login__back {
+.flow__back {
   display: grid;
   place-items: center;
   width: 44px;
@@ -338,7 +338,7 @@ a {
   cursor: pointer;
 }
 
-.login__title {
+.flow__title {
   margin: 18px 0 6px;
   font-size: 28px;
   font-weight: 600;
@@ -346,30 +346,30 @@ a {
   letter-spacing: -0.01em;
 }
 
-.login__lead {
+.flow__lead {
   margin: 0;
   font-size: 15px;
   font-weight: 300;
   color: var(--text-muted);
 }
 
-.login__lead b {
+.flow__lead b {
   font-weight: 600;
   color: var(--text);
 }
 
-.login__form {
+.flow__form {
   display: grid;
   gap: 12px;
 }
 
-.login__hint {
+.flow__hint {
   margin: -4px 0 0 6px;
   font-size: 12px;
   color: var(--text-muted);
 }
 
-.login__message {
+.flow__message {
   min-height: 1.5em;
   margin: 0;
   font-size: 14px;
@@ -377,12 +377,252 @@ a {
   color: var(--text-muted);
 }
 
-.login__message:empty {
+.flow__message:empty {
   display: none;
 }
 
-.login__message--error {
+.flow__message--error {
   color: var(--danger);
+}
+
+/* hlavné tlačidlo dole, na dosah palca */
+.flow__bottom {
+  display: grid;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.flow__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: -6px;
+}
+
+.flow__top .flow__back {
+  flex: none;
+  margin: 0 0 0 -10px;
+}
+
+/* ---------- Úvodné otázky ---------- */
+.progress {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+}
+
+.progress span {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.progress .progress__done {
+  background: var(--violet);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+}
+
+.choices {
+  display: grid;
+  gap: 10px;
+}
+
+.choice {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 64px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice__label {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.choice__hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.choice--selected {
+  border-color: var(--nav-active);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+
+.choice:active {
+  border-color: var(--nav-active);
+}
+
+.number-field {
+  position: relative;
+  display: block;
+}
+
+.number-field__input {
+  height: 72px;
+  padding-right: 80px;
+  font-size: 32px;
+  font-weight: 300;
+}
+
+.number-field__unit {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  font-size: 16px;
+  color: var(--text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* ---------- Výsledok: denný cieľ ---------- */
+.target {
+  padding: 20px 20px 22px;
+}
+
+.target__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--glow-label);
+}
+
+.target__kcal {
+  margin: 4px 0 0;
+  font-size: 56px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.target__kcal span {
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--glow-soft);
+}
+
+.macros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.macro {
+  display: grid;
+  gap: 2px;
+  padding-left: 12px;
+  border-left: 3px solid var(--macro-color);
+}
+
+.macro--protein {
+  --macro-color: var(--violet);
+}
+
+.macro--carbs {
+  --macro-color: var(--orange);
+}
+
+.macro--fat {
+  --macro-color: var(--pink);
+}
+
+.macro__value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.macro__label {
+  font-size: 12px;
+  color: var(--glow-soft);
+}
+
+.explain {
+  display: grid;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-muted);
+}
+
+.explain p {
+  margin: 0;
+}
+
+.explain b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.text-button {
+  align-self: flex-start;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: var(--violet-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.adjust {
+  display: grid;
+  gap: 4px;
+  padding: 8px 16px;
+}
+
+.adjust__note {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 1fr 44px 110px 44px;
+  align-items: center;
+  gap: 6px;
+  min-height: 56px;
+}
+
+.stepper__label {
+  font-weight: 600;
+}
+
+.stepper__value {
+  font-size: 17px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper__button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.stepper__button:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 /* ---------- PIN: bodky a klávesnica ---------- */
@@ -416,7 +656,7 @@ a {
   box-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
 }
 
-.pin .login__message {
+.pin .flow__message {
   display: block;
   margin-top: -8px;
 }

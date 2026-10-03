@@ -45,7 +45,12 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - V Supabase Auth **nechať zapnuté „Confirm email“** – inak by sa dal účet založiť mimo appky bez pozývacieho kódu.
 
 ### Ciele a onboarding
-- Bez vekového limitu. Mladší ako 18 rokov: žiadny deficit (udržiavací príjem alebo mierny prebytok).
+- **Hlavná zásada majiteľa (platí pre celú appku): čo najjednoduchšie a najzrozumiteľnejšie, aby to zvládol aj úplný amatér.** Obyčajné slová namiesto odborných, minimum písania, zložitosť riešiť v pozadí.
+- Úvodné otázky sa ukážu raz po registrácii a nedajú sa preskočiť. Jedna otázka na obrazovku, veľké ťukacie tlačidlá: pohlavie (Muž / Žena) → vek (ukladá sa ako rok narodenia) → výška → váha → „Ako často športuješ?“ (fitko aj iný šport dokopy: skoro vôbec / 1–2× / 3–4× / 5× a viac) → cieľ: Schudnúť / Spevniť postavu (= rekompozícia) / Udržať váhu / Nabrať svaly.
+- Výsledok: jedno veľké číslo kcal, pod ním bielkoviny, sacharidy, tuky a 1–2 vety po ľudsky. Ručná úprava je skrytá pod „Upraviť ručne“ (kcal po 50, bielkoviny po 5 g).
+- Výpočet (`src/lib/goals.ts`): Mifflin-St Jeor × aktivita (1,2 / 1,375 / 1,55 / 1,725) = koľko denne spáli. Cieľ: schudnúť −15 %, spevniť −5 %, udržať 0, nabrať +10 %. Bielkoviny na kg: 2,0 / 2,0 / 1,6 / 1,8 (najviac 40 % kalórií). Tuky 25 % kalórií, zvyšok sacharidy. Zaokrúhlenie kcal na 50, gramy na 5.
+- Bezpečnosť: nikdy pod 1 500 kcal (muž) / 1 200 kcal (žena), ani pri ručnej úprave. Bez vekového limitu; mladší ako 18 rokov nikdy pod udržiavací príjem – pri „schudnúť“ a „spevniť“ dostanú udržiavací príjem s vysvetlením.
+- Uloženie: tabuľka `goals` (odpovede + ciele), každý vidí a mení len svoje.
 - Jednotky kg a cm, týždeň začína pondelkom, čas Europe/Bratislava.
 
 ### Jedlo
@@ -77,6 +82,8 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 2.3 Databáza: Supabase projekt vo Frankfurte, prepojenie s appkou cez `src/lib/supabase.ts` (PR #5). Spojenie overil Claude 3. 10. 2026 (prihlasovací server aj databáza odpovedajú, verejný kľúč platí); v appke sa nič viditeľne nezmenilo (rozhodol majiteľ).
   - [x] 2.4 Registrácia a prihlásenie jedným postupom (pozývací kód + prezývka + PIN), blokovanie po 5 zlých pokusoch, bez odhlásenia (PR #6)
 - [ ] Fáza 3 – onboarding a výpočet cieľov
+  - [x] 3.1 Úvodné otázky po registrácii, výpočet a obrazovka „Tvoj denný cieľ“ s ručnou úpravou (PR #7)
+  - [ ] 3.2 Tlačidlo „Zmeniť ciele“ v Nastaveniach (tie isté otázky s predvyplnenými odpoveďami, napr. keď sa zmení váha)
 - [ ] Fáza 4 – Jedlo
 - [ ] Fáza 5 – Tréning
 - [ ] Fáza 6 – Progres a grafy

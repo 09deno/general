@@ -81,22 +81,22 @@ export default function Login() {
   }
 
   const message = error ? (
-    <p className="login__message login__message--error" role="alert">
+    <p className="flow__message flow__message--error" role="alert">
       {error}
     </p>
   ) : (
-    <p className="login__message" aria-live="polite">
+    <p className="flow__message" aria-live="polite">
       {busy ? 'Overujem…' : ''}
     </p>
   )
 
   return (
-    <div className="login">
+    <div className="flow">
       <header>
         {step === 'code' ? (
-          <img className="login__icon" src="/icons/icon-192.png" alt="" width={56} height={56} />
+          <img className="flow__icon" src="/icons/icon-192.png" alt="" width={56} height={56} />
         ) : (
-          <button type="button" className="login__back" onClick={back} disabled={busy} aria-label="Späť">
+          <button type="button" className="flow__back" onClick={back} disabled={busy} aria-label="Späť">
             <ArrowLeft size={24} aria-hidden="true" />
           </button>
         )}
@@ -104,7 +104,7 @@ export default function Login() {
       </header>
 
       {step === 'code' && (
-        <form className="login__form" onSubmit={submitCode}>
+        <form className="flow__form" onSubmit={submitCode}>
           <input
             className="field"
             type="text"
@@ -126,7 +126,7 @@ export default function Login() {
       )}
 
       {step === 'nickname' && (
-        <form className="login__form" onSubmit={submitNickname}>
+        <form className="flow__form" onSubmit={submitNickname}>
           <input
             className="field"
             type="text"
@@ -141,7 +141,7 @@ export default function Login() {
             enterKeyHint="go"
             autoFocus
           />
-          <p className="login__hint">3 až 20 znakov – písmená, čísla a podčiarkovník.</p>
+          <p className="flow__hint">3 až 20 znakov – písmená, čísla a podčiarkovník.</p>
           {message}
           <button type="submit" className="button button--primary" disabled={busy || !nickname.trim()}>
             Pokračovať
@@ -162,32 +162,32 @@ function Heading({ step, nickname, isNew }: { step: Step; nickname: string; isNe
   if (step === 'code') {
     return (
       <>
-        <h1 className="login__title">Vitaj vo Fit denníku</h1>
-        <p className="login__lead">Zadaj pozývací kód, ktorý si dostal od kamaráta.</p>
+        <h1 className="flow__title">Vitaj vo Fit denníku</h1>
+        <p className="flow__lead">Zadaj pozývací kód, ktorý si dostal od kamaráta.</p>
       </>
     )
   }
   if (step === 'nickname') {
     return (
       <>
-        <h1 className="login__title">Tvoja prezývka</h1>
-        <p className="login__lead">Ak už účet máš, zadaj svoju prezývku. Ak ešte nie, vyber si novú.</p>
+        <h1 className="flow__title">Tvoja prezývka</h1>
+        <p className="flow__lead">Ak už účet máš, zadaj svoju prezývku. Ak ešte nie, vyber si novú.</p>
       </>
     )
   }
   if (step === 'pin-again') {
     return (
       <>
-        <h1 className="login__title">Zopakuj PIN</h1>
-        <p className="login__lead">Pre istotu ho zadaj ešte raz.</p>
+        <h1 className="flow__title">Zopakuj PIN</h1>
+        <p className="flow__lead">Pre istotu ho zadaj ešte raz.</p>
       </>
     )
   }
   if (isNew) {
     return (
       <>
-        <h1 className="login__title">Vyber si PIN</h1>
-        <p className="login__lead">
+        <h1 className="flow__title">Vyber si PIN</h1>
+        <p className="flow__lead">
           Prezývka <b>{nickname}</b> je voľná. Zvoľ si 6 číslic – budeš ich potrebovať pri prihlásení na
           novom telefóne.
         </p>
@@ -196,8 +196,8 @@ function Heading({ step, nickname, isNew }: { step: Step; nickname: string; isNe
   }
   return (
     <>
-      <h1 className="login__title">Ahoj, {nickname}!</h1>
-      <p className="login__lead">Zadaj svoj PIN.</p>
+      <h1 className="flow__title">Ahoj, {nickname}!</h1>
+      <p className="flow__lead">Zadaj svoj PIN.</p>
     </>
   )
 }
