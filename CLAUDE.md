@@ -81,9 +81,9 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 2.2 Appka na plochu: ikona, úvodné obrazovky, manifest, návod na pridanie (PR #2)
   - [x] 2.3 Databáza: Supabase projekt vo Frankfurte, prepojenie s appkou cez `src/lib/supabase.ts` (PR #5). Spojenie overil Claude 3. 10. 2026 (prihlasovací server aj databáza odpovedajú, verejný kľúč platí); v appke sa nič viditeľne nezmenilo (rozhodol majiteľ).
   - [x] 2.4 Registrácia a prihlásenie jedným postupom (pozývací kód + prezývka + PIN), blokovanie po 5 zlých pokusoch, bez odhlásenia (PR #6)
-- [ ] Fáza 3 – onboarding a výpočet cieľov
+- [x] Fáza 3 – onboarding a výpočet cieľov
   - [x] 3.1 Úvodné otázky po registrácii, výpočet a obrazovka „Tvoj denný cieľ“ s ručnou úpravou (PR #7)
-  - [ ] 3.2 Tlačidlo „Zmeniť ciele“ v Nastaveniach (tie isté otázky s predvyplnenými odpoveďami, napr. keď sa zmení váha)
+  - [x] 3.2 Nastavenia: karta s denným cieľom a tlačidlo „Zmeniť ciele“ – tie isté otázky s predvyplnenými odpoveďami, šípka späť na prvej otázke zruší zmenu, na konci „Uložiť“ (PR #8)
 - [ ] Fáza 4 – Jedlo
 - [ ] Fáza 5 – Tréning
 - [ ] Fáza 6 – Progres a grafy

@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import BottomNav from './components/BottomNav'
 import InstallGuide from './components/InstallGuide'
 import Login from './components/Login'
 import Onboarding from './components/Onboarding'
 import Screen from './components/Screen'
+import Settings from './components/Settings'
 import { useGoals } from './lib/useGoals'
 import { useSession } from './lib/useSession'
 import { tabs } from './tabs'
@@ -24,10 +26,24 @@ export default function App() {
 
 function SignedIn({ userId }: { userId: string }) {
   const { goals, failed, retry, setGoals } = useGoals(userId)
+  const [changingGoals, setChangingGoals] = useState(false)
 
   if (failed) return <LoadError onRetry={retry} />
   if (goals === undefined) return null
   if (goals === null) return <Onboarding userId={userId} onDone={setGoals} />
+  if (changingGoals) {
+    return (
+      <Onboarding
+        userId={userId}
+        initial={goals}
+        onCancel={() => setChangingGoals(false)}
+        onDone={(saved) => {
+          setGoals(saved)
+          setChangingGoals(false)
+        }}
+      />
+    )
+  }
 
   return (
     <div className="app">
@@ -37,7 +53,13 @@ function SignedIn({ userId }: { userId: string }) {
             <Route
               key={tab.path}
               path={tab.path}
-              element={<Screen title={tab.label} description={tab.description} />}
+              element={
+                tab.path === '/nastavenia' ? (
+                  <Settings goals={goals} onChangeGoals={() => setChangingGoals(true)} />
+                ) : (
+                  <Screen title={tab.label} description={tab.description} />
+                )
+              }
             />
           ))}
           <Route path="*" element={<Navigate to="/jedlo" replace />} />

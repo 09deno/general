@@ -189,6 +189,33 @@ a {
   color: var(--glow-soft);
 }
 
+/* ---------- Nastavenia ---------- */
+.settings {
+  display: grid;
+  gap: 12px;
+}
+
+.settings__heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.settings__summary {
+  margin: 0 0 4px 4px;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+.settings__hint {
+  margin: 0 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 /* ---------- Spodná navigácia ---------- */
 .bottom-nav {
   position: fixed;
