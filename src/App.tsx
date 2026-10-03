@@ -8,6 +8,7 @@ import Login from './components/Login'
 import Onboarding from './components/Onboarding'
 import Screen from './components/Screen'
 import Settings from './components/Settings'
+import Training from './components/Training'
 import { targetsFromRow } from './lib/goals'
 import { useGoals } from './lib/useGoals'
 import { useSession } from './lib/useSession'
@@ -59,6 +60,8 @@ function SignedIn({ userId }: { userId: string }) {
               element={
                 tab.path === '/jedlo' ? (
                   <Food targets={targetsFromRow(goals)} />
+                ) : tab.path === '/trening' ? (
+                  <Training />
                 ) : tab.path === '/nastavenia' ? (
                   <Settings goals={goals} onChangeGoals={() => setChangingGoals(true)} />
                 ) : (

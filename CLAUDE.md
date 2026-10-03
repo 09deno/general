@@ -78,6 +78,12 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - Zdroje potravín: skenovanie čiarových kódov kamerou + bezplatná databáza **Open Food Facts**, vlastný zoznam ~100 bežných nebalených potravín (orientačné hodnoty z verejných tabuliek), čo sa nenájde, zadá sa raz ručne a appka si to zapamätá.
 - Hodnoty na 100 g → množstvo v gramoch, s rýchlymi tlačidlami („1 ks“, „1 porcia“, „100 g“).
 
+### Tréning
+- **Plán (split):** navrchu **„Vytvoriť vlastný split“** – dni sa ťukajú v poradí (Push, Pull, Legs, Upper, Lower, Full body, Hrudník, Chrbát, Nohy, Ramená, Ruky, Brucho, aj viackrát) alebo sa napíše vlastný názov dňa; majiteľ má napr. Push / Pull / Legs / Upper. Pod tým **11 hotových splitov** (PPL, PPL + Upper, PPL ×2, Upper/Lower, Upper/Lower ×2, ULPPL, PHUL, Arnold, Hrudník+Tri / Chrbát+Bi / Nohy+Ramená, Full body, Bro split) – majiteľovi boli pôvodné 4 „strašne málo“. Dni plánu sa dajú premenovať, pridať a zmazať; názvy dní hotových splitov sú po anglicky ako vo fitku (Push, Pull, Legs, Upper, Lower). Do každého dňa si **sám pridá cviky** zo zoznamu appky (`src/data/exercises.ts`, **118 cvikov** podľa partií – hrudník, chrbát, nohy, ramená, biceps a predlaktie, triceps, brucho, celé telo). **Názvy cvikov sú po anglicky** ako vo fitku (Barbell Bench Press, Lat Pulldown, Romanian Deadlift…) – želanie majiteľa; hľadať sa dá aj po slovensky bez diakritiky (drep, zhyby, benč, bicák, mŕtvy ťah). Kľúče pôvodných cvikov ostali rovnaké, uložené plány sa nerozbijú; chýbajúci si pridá ako **vlastný cvik** (názov, partia, spôsob merania: činka/stroj, vlastná váha, na čas). Tlačidlo **„Pridať vlastný cvik“ je navrchu** pod vyhľadávaním – na konci dlhého zoznamu ho majiteľ nenašiel. Keď nesedia všetky hľadané slová (napr. „seated shoulder press“), ukážu sa podobné cviky s vetou, že presne taký v zozname nie je. Dni hotových splitov sú prázdne (rozhodol majiteľ).
+- Uloženie: `training_plans` (split + dni ako JSON, kľúče cvikov: knižnica napr. `bench-press`, vlastný `custom:<id>`), `custom_exercises`; každý vidí len svoje.
+- Tréningy **nepridávajú kalórie** k „Zostáva X kcal“ – denný cieľ už počíta s aktivitou (rozhodol majiteľ).
+- Fáza 5 po krokoch: 5.1 plán (split) a cviky → 5.2 zápis tréningu podľa dňa plánu (série opakovania × kg, minulý výkon a predvyplnenie) → 5.3 šport/iné (druh + minúty) a história tréningov.
+
 ### Používanie
 - Appka potrebuje internet (bez offline režimu).
 - Inštalácia ako appka na plochu (PWA). Natívna appka v App Store nie – stojí 99 $/rok a všetko má byť zadarmo.
@@ -105,7 +111,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 3.1 Úvodné otázky po registrácii, výpočet a obrazovka „Tvoj denný cieľ“ s ručnou úpravou (PR #7)
   - [x] 3.2 Nastavenia: karta s denným cieľom a tlačidlo „Zmeniť ciele“ – tie isté otázky s predvyplnenými odpoveďami, šípka späť na prvej otázke zruší zmenu, na konci „Uložiť“ (PR #8)
   - [x] 3.3 „Chcem to rozpísať“ pri otázke o športe – fitko, iný šport a práca zvlášť (PR #9)
-- [ ] Fáza 4 – Jedlo
+- [x] Fáza 4 – Jedlo (okrem 4.7 – fotka, odložené)
   - [x] 4.1 Obrazovka Jedlo („Zostáva X kcal“, makroživiny, dni, zoznam podľa jedál, mazanie) a ručné pridanie jedla (PR #10)
   - [x] 4.2 Vyhľadávanie ~150 potravín a varených jedál, gramy/ml a rýchle tlačidlá („1 ks“, „1 porcia“, „100 g“), Snack medzi jedlami (PR #11)
   - [x] 4.3 Prísady k jedlu (jeden riadok so súčtom) a rozšírený zoznam na ~280 položiek (PR #12)
@@ -114,6 +120,9 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 4.6 Skenovanie čiarového kódu + Open Food Facts, neznámy výrobok sa zapamätá pre celú partiu (PR #14)
   - [ ] 4.7 (neskôr, platené) Fotka jedla – odhad kalórií umelou inteligenciou
 - [ ] Fáza 5 – Tréning
+  - [x] 5.1 Tréningový plán: vlastný split na pár ťuknutí alebo 11 hotových, dni, 118 cvikov s anglickými názvami a vlastné cviky (PR #15)
+  - [ ] 5.2 Zápis tréningu podľa dňa plánu – série, minulý výkon, predvyplnenie
+  - [ ] 5.3 Šport a iné (druh + minúty), história tréningov
 - [ ] Fáza 6 – Progres a grafy
 - [ ] Fáza 7 – Nastavenia, doladenie, prípadne sociálne funkcie (otázka, čo majú kamaráti navzájom vidieť – len sa spýtať, nestavať)
 

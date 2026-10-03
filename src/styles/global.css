@@ -800,6 +800,134 @@ a {
   color: var(--glow-soft);
 }
 
+/* ---------- Tréning: plán (split) ---------- */
+.plan {
+  display: grid;
+  gap: 14px;
+}
+
+.plan__split {
+  margin: -8px 4px 0;
+  color: var(--text-muted);
+}
+
+.plan__split b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.plan-day {
+  display: grid;
+  gap: 10px;
+  padding: 14px 14px 16px;
+}
+
+.plan-day__header,
+.plan-day__rename {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.plan-day__name {
+  flex: 1;
+  margin: 0 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.plan-day__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.plan-day__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-day__confirm span {
+  flex: 1 1 100%;
+}
+
+.plan-day__empty {
+  margin: 0 4px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.plan-day__list {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  border-radius: 14px;
+  background: var(--border);
+}
+
+.plan-exercise {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px 6px 14px;
+  background: var(--bg);
+}
+
+.plan-exercise__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.plan-exercise__name {
+  font-weight: 600;
+}
+
+.plan-exercise__group {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* riadok len s názvom (bez druhého riadku s údajmi) */
+.extra--single .extra__remove {
+  grid-row: 1;
+}
+
+.split-builder__custom {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+/* cvik už je v dni */
+.result--added .result__name {
+  color: var(--violet-ink);
+}
+
+.result__check {
+  flex: none;
+  color: var(--violet-ink);
+}
+
+/* „Hotovo“ ostáva dole na obrazovke nad navigáciou */
+.plan__done {
+  position: sticky;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 12px);
+  display: grid;
+}
+
 /* ---------- Spodná navigácia ---------- */
 .bottom-nav {
   position: fixed;
