@@ -6,13 +6,31 @@ export type Plan = { split: string; days: PlanDay[] }
 
 // Hotové splity – dni sú prázdne, cviky si každý pridá sám.
 export const SPLITS: { name: string; days: string[]; hint: string }[] = [
-  { name: 'Push / Pull / Nohy', days: ['Push', 'Pull', 'Nohy'], hint: 'Tlaky, ťahy a nohy – 3 dni' },
-  { name: 'Horná / Dolná časť', days: ['Horná časť', 'Dolná časť'], hint: 'Vrch a spodok tela – 2 dni' },
-  { name: 'Celé telo', days: ['Celé telo'], hint: 'Celé telo naraz – 1 deň, opakuješ ho' },
+  { name: 'Push / Pull / Legs', days: ['Push', 'Pull', 'Legs'], hint: 'Tlaky, ťahy, nohy – 3 dni' },
+  { name: 'Push / Pull / Legs / Upper', days: ['Push', 'Pull', 'Legs', 'Upper'], hint: 'PPL + horná časť – 4 dni' },
+  { name: 'Push / Pull / Legs ×2', days: ['Push', 'Pull', 'Legs', 'Push', 'Pull', 'Legs'], hint: 'Každá partia 2× do týždňa – 6 dní' },
+  { name: 'Upper / Lower', days: ['Upper', 'Lower'], hint: 'Horná a dolná časť tela – 2 dni' },
+  { name: 'Upper / Lower ×2', days: ['Upper A', 'Lower A', 'Upper B', 'Lower B'], hint: 'Horná a dolná 2× do týždňa – 4 dni' },
+  { name: 'Upper / Lower / Push / Pull / Legs', days: ['Upper', 'Lower', 'Push', 'Pull', 'Legs'], hint: 'Kombinácia – 5 dní' },
+  { name: 'PHUL', days: ['Power Upper', 'Power Lower', 'Hypertrophy Upper', 'Hypertrophy Lower'], hint: 'Sila + objem – 4 dni' },
+  { name: 'Arnold split', days: ['Hrudník + Chrbát', 'Ramená + Ruky', 'Nohy'], hint: 'Ako Arnold – 3 dni' },
+  {
+    name: 'Hrudník+Triceps / Chrbát+Biceps / Nohy+Ramená',
+    days: ['Hrudník + Triceps', 'Chrbát + Biceps', 'Nohy + Ramená'],
+    hint: 'Klasika – 3 dni',
+  },
+  { name: 'Full body', days: ['Full body A', 'Full body B', 'Full body C'], hint: 'Celé telo 3× do týždňa' },
   { name: 'Bro split', days: ['Hrudník', 'Chrbát', 'Nohy', 'Ramená', 'Ruky'], hint: 'Každý deň iná partia – 5 dní' },
 ]
 
-export const CUSTOM_SPLIT = 'Vlastný plán'
+// rýchle pridanie dní pri skladaní vlastného splitu
+export const DAY_NAMES = ['Push', 'Pull', 'Legs', 'Upper', 'Lower', 'Full body', 'Hrudník', 'Chrbát', 'Nohy', 'Ramená', 'Ruky', 'Brucho']
+
+// názov vlastného splitu z jeho dní: „Push / Pull / Legs / Upper“
+export const splitName = (days: string[]) => {
+  const name = days.join(' / ')
+  return name.length > 60 ? `${name.slice(0, 59)}…` : name
+}
 
 export const newDay = (name: string): PlanDay => ({ id: crypto.randomUUID(), name, exercises: [] })
 

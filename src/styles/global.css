@@ -900,6 +900,17 @@ a {
   color: var(--text-muted);
 }
 
+/* riadok len s názvom (bez druhého riadku s údajmi) */
+.extra--single .extra__remove {
+  grid-row: 1;
+}
+
+.split-builder__custom {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
 /* cvik už je v dni */
 .result--added .result__name {
   color: var(--violet-ink);

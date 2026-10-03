@@ -3,13 +3,14 @@ import { ArrowLeft, Check, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { EXERCISES, GROUP_LABELS, GROUPS, KINDS, matchesExercise, type Exercise, type ExerciseKind, type MuscleGroup } from '../data/exercises'
 import {
   addCustomExercise,
-  CUSTOM_SPLIT,
+  DAY_NAMES,
   deletePlan,
   findExercise,
   loadCustomExercises,
   loadPlan,
   newDay,
   savePlan,
+  splitName,
   SPLITS,
   type Plan,
   type PlanDay,
@@ -136,23 +137,108 @@ export default function Training() {
   )
 }
 
-// Výber splitu pri prvom otvorení – hotový alebo vlastný plán.
+// Výber splitu pri prvom otvorení – vlastný (poskladaný z dní) alebo hotový.
 function SplitPicker({ onPick }: { onPick: (split: string, days: string[]) => void }) {
+  const [building, setBuilding] = useState(false)
+
+  if (building) return <SplitBuilder onCreate={(days) => onPick(splitName(days), days)} onCancel={() => setBuilding(false)} />
+
   return (
     <div className="plan">
       <p className="flow__lead">Vyber si, ako trénuješ. Cviky do jednotlivých dní si potom pridáš sám.</p>
-      <div className="choices">
-        {SPLITS.map((split) => (
-          <button key={split.name} type="button" className="choice" onClick={() => onPick(split.name, split.days)}>
-            <span className="choice__label">{split.name}</span>
-            <span className="choice__hint">{split.hint}</span>
-          </button>
-        ))}
-        <button type="button" className="choice" onClick={() => onPick(CUSTOM_SPLIT, ['Deň 1'])}>
-          <span className="choice__label">{CUSTOM_SPLIT}</span>
-          <span className="choice__hint">Dni si pomenuješ a pridáš sám</span>
-        </button>
+      <button type="button" className="add-extra" onClick={() => setBuilding(true)}>
+        <Plus size={18} aria-hidden="true" />
+        Vytvoriť vlastný split
+      </button>
+      <div className="add-food__group">
+        <span className="add-food__label">Alebo vyber hotový</span>
+        <div className="choices">
+          {SPLITS.map((split) => (
+            <button key={split.name} type="button" className="choice" onClick={() => onPick(split.name, split.days)}>
+              <span className="choice__label">{split.name}</span>
+              <span className="choice__hint">{split.hint}</span>
+            </button>
+          ))}
+        </div>
       </div>
+    </div>
+  )
+}
+
+// Vlastný split: dni sa ťukajú v poradí, ako človek trénuje (napr. Push, Pull, Legs, Upper).
+function SplitBuilder({ onCreate, onCancel }: { onCreate: (days: string[]) => void; onCancel: () => void }) {
+  const [days, setDays] = useState<string[]>([])
+  const [custom, setCustom] = useState('')
+
+  const addCustom = (event: FormEvent) => {
+    event.preventDefault()
+    const name = custom.trim().slice(0, 30)
+    if (!name) return
+    setDays((current) => [...current, name])
+    setCustom('')
+  }
+
+  return (
+    <div className="plan">
+      <p className="flow__lead">Ťukaj dni v poradí, ako trénuješ. Ten istý deň môže byť aj viackrát.</p>
+
+      <div className="add-food__group">
+        <span className="add-food__label">Pridať deň</span>
+        <div className="chips">
+          {DAY_NAMES.map((name) => (
+            <button key={name} type="button" className="chip" onClick={() => setDays((current) => [...current, name])}>
+              {name}
+            </button>
+          ))}
+        </div>
+        <form className="split-builder__custom" onSubmit={addCustom}>
+          <input
+            className="field"
+            type="text"
+            value={custom}
+            onChange={(event) => setCustom(event.target.value)}
+            placeholder="alebo napíš vlastný deň"
+            aria-label="Vlastný názov dňa"
+            maxLength={30}
+            autoComplete="off"
+          />
+          <button type="submit" className="button button--ghost" disabled={!custom.trim()}>
+            Pridať
+          </button>
+        </form>
+      </div>
+
+      <div className="add-food__group">
+        <span className="add-food__label">Tvoj split</span>
+        {days.length === 0 ? (
+          <p className="plan-day__empty">Zatiaľ žiadne dni – ťukni napr. na Push.</p>
+        ) : (
+          <ul className="extras">
+            {days.map((name, index) => (
+              <li key={index} className="extra extra--single">
+                <span className="extra__name">
+                  {index + 1}. {name}
+                </span>
+                <button
+                  type="button"
+                  className="extra__remove"
+                  onClick={() => setDays((current) => current.filter((_, i) => i !== index))}
+                  aria-label={`Odobrať ${name}`}
+                >
+                  <X size={18} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <button type="button" className="button button--primary" disabled={days.length === 0} onClick={() => onCreate(days)}>
+        Vytvoriť split
+      </button>
+      <button type="button" className="text-button" onClick={onCancel}>
+        Späť na hotové splity
+      </button>
     </div>
   )
 }
