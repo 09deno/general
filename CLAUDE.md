@@ -20,6 +20,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 ## Technické riešenie
 
 - **Appka:** React 19 + Vite + TypeScript, `react-router-dom`, ikony `lucide-react`, PWA cez `vite-plugin-pwa` (manifest, service worker, automatická aktualizácia).
+  - Aktualizácia: `registerSW` v `src/main.tsx` – nová verzia sa stiahne na pozadí a appka sa sama znovu načíta; kontroluje sa aj pri návrate do appky z pozadia. (Do 3. 10. 2026 sa nová verzia ukázala až po ďalšom obnovení – majiteľ preto pri 3.1 nevidel úvodné otázky.)
 - **Hosting:** Vercel, projekt `general` v účte **09deno**, prepojený s GitHub repom `09deno/general`. Každý push do vetvy = testovacia verzia, `main` = ostrá verzia. `vercel.json` presmeruje všetky adresy na appku. Ostrá adresa: **`dccf2f4b.vercel.app`** (overené 3. 10. 2026, beží na nej Fit denník).
 - **Databáza + prihlásenie:** Supabase, bezplatný plán, server **Frankfurt (EÚ)**. Prístup cez Supabase konektor v claude.ai.
   - Fit denník má **vlastný Supabase účet** (iný e-mail ako hlavný účet majiteľa). Hlavný účet už má 2 aktívne bezplatné projekty (SideWage, interny-system-kit) a viac bezplatný plán nedovolí. **Konektor je prepojený na tento nový účet.** Hlavný účet nemeniť ani nepozastavovať.
