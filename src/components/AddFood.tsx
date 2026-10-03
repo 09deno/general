@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ChevronRight, Plus, Search, X } from 'lucide-react'
-import { nutrition, searchFoods, type Food } from '../data/foods'
+import { findFood, nutrition, searchFoods, type Food, type Menu } from '../data/foods'
 import { addEntry, dayLabel, mealForNow, MEALS, parseDay, today, type Meal, type NewFoodEntry } from '../lib/food'
 
 // prázdne políčko = 0, čiarka aj bodka ako desatinná čiarka
@@ -13,6 +13,27 @@ const defaultAmount = (food: Food) => String(food.portions[0]?.grams ?? 100)
 type EntryData = Omit<NewFoodEntry, 'day' | 'meal'>
 // časť jedla – základ alebo prísada; množstvo ako text z políčka
 type Part = { food: Food; grams: string }
+// výber v menu: veľkosť (príloha + nápoj), ktorý nápoj a ktoré omáčky
+type MenuChoice = { size: number; drink: number; sauces: number[] }
+const DEFAULT_CHOICE: MenuChoice = { size: 0, drink: 0, sauces: [] }
+
+const liters = (ml: number) => `${(ml / 1000).toLocaleString('sk')} l`
+
+// časti menu podľa výberu – príloha, nápoj a omáčky
+function menuParts(menu: Menu, choice: MenuChoice): Part[] {
+  const size = menu.sizes[choice.size]
+  return [
+    { food: findFood(size.side.food), grams: String(size.side.grams) },
+    { food: findFood(menu.drinks[choice.drink].food), grams: String(size.drinkMl) },
+    ...choice.sauces.map((index) => ({ food: findFood(menu.sauces[index].food), grams: String(menu.sauces[index].grams) })),
+  ]
+}
+
+// „stredné hranolky, Coca-Cola 0,4 l, Kečup“
+function menuSummary(menu: Menu, choice: MenuChoice) {
+  const size = menu.sizes[choice.size]
+  return [size.side.label, `${menu.drinks[choice.drink].label} ${liters(size.drinkMl)}`, ...choice.sauces.map((index) => menu.sauces[index].label)].join(', ')
+}
 
 // súčet živín všetkých častí jedla
 function total(parts: Part[]) {
@@ -39,6 +60,7 @@ export default function AddFood() {
   const [meal, setMeal] = useState<Meal>(mealForNow)
   const [base, setBase] = useState<Part | null>(null)
   const [extras, setExtras] = useState<Part[]>([])
+  const [choice, setChoice] = useState<MenuChoice>(DEFAULT_CHOICE)
   // pridávanie prísady: najprv vyhľadanie, potom množstvo zvolenej prísady
   const [adding, setAdding] = useState<'search' | Part | null>(null)
   const [manual, setManual] = useState(false)
@@ -71,11 +93,18 @@ export default function AddFood() {
     }
   }
 
+  const menu = base?.food.menu
+  // všetky časti jedla: základ, pri menu príloha, nápoj a omáčky, potom prísady navyše
+  const dish = base ? [base, ...(menu ? menuParts(menu, choice) : []), ...extras] : []
+
   const saveDish = () => {
-    const parts = base ? [base, ...extras] : []
+    const parts = dish
     if (parts.some((part) => !validAmount(parseNumber(part.grams)))) return
     const values = total(parts)
-    const name = parts.map((part) => part.food.name).join(' + ')
+    const name = [
+      menu ? `${base!.food.name}: ${menuSummary(menu, choice)}` : base!.food.name,
+      ...extras.map((part) => part.food.name),
+    ].join(' + ')
     const sameUnit = parts.every((part) => part.food.unit === parts[0].food.unit)
     save({
       name: name.length > 100 ? `${name.slice(0, 99)}…` : name,
@@ -90,7 +119,9 @@ export default function AddFood() {
 
   const title = adding
     ? adding === 'search'
-      ? 'Pridať prísadu'
+      ? menu
+        ? 'Niečo navyše'
+        : 'Pridať prísadu'
       : adding.food.name
     : base
       ? base.food.name
@@ -153,11 +184,15 @@ export default function AddFood() {
           </>
         ) : base ? (
           <>
-            <AmountPicker part={base} onChange={(grams) => setBase({ ...base, grams })} />
+            {menu ? (
+              <MenuPicker menu={menu} choice={choice} onChange={setChoice} />
+            ) : (
+              <AmountPicker part={base} onChange={(grams) => setBase({ ...base, grams })} />
+            )}
 
             {extras.length > 0 && (
               <div className="add-food__group">
-                <span className="add-food__label">Prísady</span>
+                <span className="add-food__label">{menu ? 'Navyše' : 'Prísady'}</span>
                 <ul className="extras">
                   {extras.map((part, index) => (
                     <li key={index} className="extra">
@@ -180,10 +215,10 @@ export default function AddFood() {
             )}
             <button type="button" className="add-extra" onClick={() => setAdding('search')}>
               <Plus size={18} aria-hidden="true" />
-              Pridať prísadu
+              {menu ? 'Pridať niečo navyše' : 'Pridať prísadu'}
             </button>
 
-            <NutritionCard parts={[base, ...extras]} />
+            <NutritionCard parts={dish} />
             <p className="search__hint">Hodnoty sú orientačné.</p>
 
             {error && (
@@ -208,7 +243,10 @@ export default function AddFood() {
               placeholder="Hľadaj, napr. ryža, vajce, guláš"
               hint="Napíš názov potraviny alebo jedla. Sú tu aj varené jedlá z jedálne či reštaurácie – napr. guláš, rezeň, pizza, kebab. Po výbere môžeš pridať aj prísady."
               places
-              onPick={(food) => setBase({ food, grams: defaultAmount(food) })}
+              onPick={(food) => {
+                setBase({ food, grams: defaultAmount(food) })
+                setChoice(DEFAULT_CHOICE)
+              }}
             />
             <button type="button" className="text-button" onClick={() => setManual(true)}>
               Nenašiel si? Zadaj ručne
@@ -270,9 +308,11 @@ function FoodSearch(props: { placeholder: string; hint?: string; places?: boolea
                   <span className="result__name">{item.name}</span>
                   <span className="result__info">
                     {/* kalórie pre bežnú porciu – začiatočník lepšie pozná „1 porcia“ než 100 g */}
-                    {item.portions[0]
-                      ? `${item.portions[0].label} (${item.portions[0].grams} ${item.unit}) · ${nutrition(item, item.portions[0].grams).kcal} kcal`
-                      : `100 ${item.unit} · ${item.kcal} kcal`}
+                    {item.menu
+                      ? `bežné menu · ${total([{ food: item, grams: defaultAmount(item) }, ...menuParts(item.menu, DEFAULT_CHOICE)]).kcal.toLocaleString('sk')} kcal`
+                      : item.portions[0]
+                        ? `${item.portions[0].label} (${item.portions[0].grams} ${item.unit}) · ${nutrition(item, item.portions[0].grams).kcal} kcal`
+                        : `100 ${item.unit} · ${item.kcal} kcal`}
                   </span>
                 </span>
                 <ChevronRight size={20} aria-hidden="true" />
@@ -281,6 +321,72 @@ function FoodSearch(props: { placeholder: string; hint?: string; places?: boolea
           ))}
         </ul>
       )}
+    </>
+  )
+}
+
+// Menu: veľkosť, nápoj a omáčky ťuknutím; predvolené je bežné menu s prvým nápojom.
+// zmena vždy z aktuálneho výberu, aby sa nestratilo ani rýchle ťuknutie za ťuknutím
+type MenuUpdate = (update: (choice: MenuChoice) => MenuChoice) => void
+
+function MenuPicker({ menu, choice, onChange }: { menu: Menu; choice: MenuChoice; onChange: MenuUpdate }) {
+  const toggleSauce = (index: number) =>
+    onChange((current) => ({
+      ...current,
+      sauces: current.sauces.includes(index) ? current.sauces.filter((item) => item !== index) : [...current.sauces, index],
+    }))
+
+  return (
+    <>
+      <div className="add-food__group">
+        <span className="add-food__label">Veľkosť menu</span>
+        <div className="chips">
+          {menu.sizes.map((size, index) => (
+            <button
+              key={size.label}
+              type="button"
+              className={index === choice.size ? 'chip chip--selected' : 'chip'}
+              onClick={() => onChange((current) => ({ ...current, size: index }))}
+            >
+              {size.label}
+            </button>
+          ))}
+        </div>
+        <span className="search__hint">{menu.sizes[choice.size].hint}</span>
+      </div>
+
+      <div className="add-food__group">
+        <span className="add-food__label">Nápoj</span>
+        <div className="chips">
+          {menu.drinks.map((drink, index) => (
+            <button
+              key={drink.label}
+              type="button"
+              className={index === choice.drink ? 'chip chip--selected' : 'chip'}
+              onClick={() => onChange((current) => ({ ...current, drink: index }))}
+            >
+              {drink.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="add-food__group">
+        <span className="add-food__label">Omáčka (nepovinné)</span>
+        <div className="chips">
+          {menu.sauces.map((sauce, index) => (
+            <button
+              key={sauce.label}
+              type="button"
+              className={choice.sauces.includes(index) ? 'chip chip--selected' : 'chip'}
+              onClick={() => toggleSauce(index)}
+              aria-pressed={choice.sauces.includes(index)}
+            >
+              {sauce.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </>
   )
 }

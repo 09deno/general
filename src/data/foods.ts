@@ -14,6 +14,16 @@ export type Food = {
   unit: 'g' | 'ml'
   // iné názvy, pod ktorými sa jedlo dá nájsť
   aliases: string
+  // menu (napr. Big Mac menu): k hlavnému jedlu sa vyberá príloha, nápoj a omáčky
+  menu?: Menu
+}
+
+export type MenuPart = { label: string; food: string; grams: number }
+
+export type Menu = {
+  sizes: { label: string; hint: string; side: MenuPart; drinkMl: number }[]
+  drinks: { label: string; food: string }[]
+  sauces: MenuPart[]
 }
 
 type Extra = { unit?: 'ml'; aliases?: string }
@@ -72,7 +82,7 @@ function leviathan(name: string, kcalPerPortion: number, portionGrams: number, s
   })
 }
 
-export const FOODS: Food[] = [
+const BASE: Food[] = [
   // ---------- Pečivo, prílohy, obilniny ----------
   food('Chlieb', 250, 8.5, 49, 1.5, [['1 krajec', 40]], { aliases: 'kváskový konzumný' }),
   food('Celozrnný chlieb', 240, 10, 41, 3.5, [['1 krajec', 40]], { aliases: 'tmavý grahamový' }),
@@ -291,6 +301,7 @@ export const FOODS: Food[] = [
   food('Palacinka s nutellou', 290, 6, 35, 14, [['1 ks', 90]], { aliases: 'palacinky' }),
 
   // ---------- Nápoje ----------
+  food('Voda', 0, 0, 0, 0, [['1 pohár', 250], ['1 fľaša', 500]], { unit: 'ml', aliases: 'minerálka sóda' }),
   food('Pivo 12°', 45, 0.5, 3.6, 0, [['1 veľké', 500], ['1 malé', 300]], { unit: 'ml', aliases: 'pivo' }),
   food('Víno', 85, 0.1, 2.6, 0, [['1 deci', 100], ['1 pohár', 200]], { unit: 'ml', aliases: 'vino' }),
   food('Kola', 42, 0, 10.6, 0, [['1 plechovka', 330], ['1 pohár', 250]], { unit: 'ml', aliases: 'coca-cola pepsi' }),
@@ -413,6 +424,25 @@ export const FOODS: Food[] = [
     portions: [['malý', 250], ['veľký', 400]],
   }),
   piece("McDonald's jablková taštička", 80, 228, 2.3, 28, 12, { aliases: 'mcdonalds mekac dezert' }),
+  ...[
+    ["McDonald's Coca-Cola", 104, 26],
+    ["McDonald's Coca-Cola Zero", 0, 0],
+    ["McDonald's Fanta", 96, 24],
+    ["McDonald's Sprite", 85, 20.8],
+    ["McDonald's Lipton Ice Tea", 45, 11],
+  ].map(([name, kcal, carbs]) =>
+    piece(name as string, 250, kcal as number, 0, carbs as number, 0, {
+      unit: 'ml',
+      aliases: 'mcdonalds mekac napoj kola',
+      portions: [['0,25 l', 250], ['0,4 l', 400], ['0,5 l', 500]],
+    }),
+  ),
+  piece("McDonald's kečup", 12, 14, 0.2, 3.1, 0, { label: '1 porcia', aliases: 'mcdonalds mekac omacka kecup' }),
+  piece("McDonald's sladkokyslá omáčka", 30, 42, 0.1, 9.7, 0.3, { label: '1 porcia', aliases: 'mcdonalds mekac omacka' }),
+  piece("McDonald's BBQ omáčka", 30, 47, 0.2, 10, 0.4, { label: '1 porcia', aliases: 'mcdonalds mekac omacka barbecue' }),
+  piece("McDonald's cesnaková omáčka", 20, 75, 0, 2, 8, { label: '1 porcia', aliases: 'mcdonalds mekac omacka' }),
+  piece("McDonald's kari omáčka", 30, 39, 0.2, 8.6, 0.3, { label: '1 porcia', aliases: 'mcdonalds mekac omacka curry' }),
+  piece("McDonald's horčicová omáčka", 30, 54, 0.5, 6.4, 3, { label: '1 porcia', aliases: 'mcdonalds mekac omacka' }),
 
   // KFC: oficiálna tabuľka nutričných hodnôt KFC (AmRest, 2020); menu sa časom mení.
   piece('KFC Original kúsok – stehno', 111, 301, 22, 9.3, 20, { aliases: 'kfc kura kuracie' }),
@@ -445,6 +475,25 @@ export const FOODS: Food[] = [
   piece('KFC zemiaková kaša s omáčkou', 220, 117, 3.3, 22, 1.3, { label: '1 porcia', aliases: 'kfc kasa' }),
   piece('KFC Coleslaw', 140, 141, 1, 13, 10, { label: '1 porcia', aliases: 'kfc salat' }),
   piece('KFC kukurica s maslom', 250, 315, 8.3, 49, 9.5, { aliases: 'kfc' }),
+  ...[
+    ['KFC Pepsi', 121, 32],
+    ['KFC Pepsi bez cukru', 1, 0],
+    ['KFC Mirinda', 144, 39],
+    ['KFC 7UP', 129, 34],
+    ['KFC Lipton Ice Tea', 90, 21],
+  ].map(([name, kcal, carbs]) =>
+    piece(name as string, 300, kcal as number, 0, carbs as number, 0, {
+      unit: 'ml',
+      aliases: 'kfc napoj',
+      portions: [['0,3 l', 300], ['0,4 l', 400], ['0,5 l', 500]],
+    }),
+  ),
+  piece('KFC kečup', 25, 37, 0.6, 8.7, 0, { label: '1 porcia', aliases: 'kfc omacka kecup' }),
+  piece('KFC BBQ omáčka', 25, 26, 0.4, 5.8, 0.1, { label: '1 porcia', aliases: 'kfc omacka barbecue' }),
+  piece('KFC cesnaková omáčka', 25, 125, 0.6, 1.8, 12.8, { label: '1 porcia', aliases: 'kfc omacka majonéza' }),
+  piece('KFC tatárska omáčka', 25, 98, 0.1, 1.6, 10.3, { label: '1 porcia', aliases: 'kfc omacka' }),
+  piece('KFC Orient omáčka', 25, 43, 0.2, 10.5, 0, { label: '1 porcia', aliases: 'kfc omacka' }),
+  piece('KFC Golden omáčka', 25, 108, 0.2, 6.5, 9, { label: '1 porcia', aliases: 'kfc omacka' }),
 
   // Leviathan (špagety, Europa SC): kalórie na porciu zo stránky leviathan.sk; bielkoviny, sacharidy
   // a tuky sú odhad podľa zloženia omáčky. Porcie 400 / 600 / 800 g.
@@ -491,6 +540,116 @@ export const FOODS: Food[] = [
   piece('Wakaka polievka Tom-Yum', 350, 200, 10, 10, 13, { label: '1 porcia', unit: 'ml', aliases: 'wakaka polievka tom yum' }),
   piece('Wakaka ostro-kyslá polievka', 350, 150, 10, 14, 6, { label: '1 porcia', unit: 'ml', aliases: 'wakaka polievka' }),
 ]
+
+// Menu: hlavné jedlo + príloha + nápoj (+ omáčky). Predvolené je bežné menu s prvým nápojom,
+// takže stačí ťuknúť „Pridať“.
+const MCD_MENU: Menu = {
+  sizes: [
+    {
+      label: 'Bežné menu',
+      hint: 'stredné hranolky, nápoj 0,4 l',
+      side: { label: 'stredné hranolky', food: "McDonald's hranolky", grams: 114 },
+      drinkMl: 400,
+    },
+    {
+      label: 'Veľké menu',
+      hint: 'veľké hranolky, nápoj 0,5 l',
+      side: { label: 'veľké hranolky', food: "McDonald's hranolky", grams: 150 },
+      drinkMl: 500,
+    },
+  ],
+  drinks: [
+    { label: 'Coca-Cola', food: "McDonald's Coca-Cola" },
+    { label: 'Coca-Cola Zero', food: "McDonald's Coca-Cola Zero" },
+    { label: 'Fanta', food: "McDonald's Fanta" },
+    { label: 'Sprite', food: "McDonald's Sprite" },
+    { label: 'Ľadový čaj', food: "McDonald's Lipton Ice Tea" },
+    { label: 'Voda', food: 'Voda' },
+  ],
+  sauces: [
+    { label: 'Kečup', food: "McDonald's kečup", grams: 12 },
+    { label: 'Sladkokyslá', food: "McDonald's sladkokyslá omáčka", grams: 30 },
+    { label: 'BBQ', food: "McDonald's BBQ omáčka", grams: 30 },
+    { label: 'Cesnaková', food: "McDonald's cesnaková omáčka", grams: 20 },
+    { label: 'Kari', food: "McDonald's kari omáčka", grams: 30 },
+    { label: 'Horčicová', food: "McDonald's horčicová omáčka", grams: 30 },
+  ],
+}
+
+const KFC_MENU: Menu = {
+  sizes: [
+    {
+      label: 'Bežné menu',
+      hint: 'malé hranolky, nápoj 0,4 l',
+      side: { label: 'malé hranolky', food: 'KFC hranolky', grams: 70 },
+      drinkMl: 400,
+    },
+    {
+      label: 'Veľké menu',
+      hint: 'veľké hranolky, nápoj 0,5 l',
+      side: { label: 'veľké hranolky', food: 'KFC hranolky', grams: 105 },
+      drinkMl: 500,
+    },
+  ],
+  drinks: [
+    { label: 'Pepsi', food: 'KFC Pepsi' },
+    { label: 'Pepsi bez cukru', food: 'KFC Pepsi bez cukru' },
+    { label: 'Mirinda', food: 'KFC Mirinda' },
+    { label: '7UP', food: 'KFC 7UP' },
+    { label: 'Ľadový čaj', food: 'KFC Lipton Ice Tea' },
+    { label: 'Voda', food: 'Voda' },
+  ],
+  sauces: [
+    { label: 'Kečup', food: 'KFC kečup', grams: 25 },
+    { label: 'BBQ', food: 'KFC BBQ omáčka', grams: 25 },
+    { label: 'Cesnaková', food: 'KFC cesnaková omáčka', grams: 25 },
+    { label: 'Tatárska', food: 'KFC tatárska omáčka', grams: 25 },
+    { label: 'Orient', food: 'KFC Orient omáčka', grams: 25 },
+    { label: 'Golden', food: 'KFC Golden omáčka', grams: 25 },
+  ],
+}
+
+// „McDonald's Big Mac menu“, „McDonald's Chicken McNuggets 9 ks menu“…
+function menuOf(name: string, menu: Menu, portionLabel?: string): Food {
+  const main = BASE.find((item) => item.name === name)!
+  const portion = main.portions.find((item) => item.label === portionLabel) ?? main.portions[0]
+  return {
+    ...main,
+    name: `${name}${portionLabel ? ` ${portionLabel}` : ''} menu`,
+    portions: [{ label: portionLabel ?? '1 ks', grams: portion.grams }],
+    aliases: `${main.aliases} menu`,
+    menu,
+  }
+}
+
+export const FOODS: Food[] = [
+  ...BASE,
+  ...[
+    "McDonald's Big Mac",
+    "McDonald's Big Arch",
+    "McDonald's McRoyal",
+    "McDonald's McRoyal Double",
+    "McDonald's Double Cheeseburger",
+    "McDonald's Big Tasty Bacon",
+    "McDonald's McChicken",
+    "McDonald's McCrispy Creamy BBQ",
+    "McDonald's Creamy BBQ Chicken McWrap",
+    "McDonald's Honey Mustard Chicken McWrap",
+  ].map((name) => menuOf(name, MCD_MENU)),
+  menuOf("McDonald's Chicken McNuggets", MCD_MENU, '9 ks'),
+  menuOf("McDonald's Chicken Strips", MCD_MENU, '4 ks'),
+  ...['KFC Zinger', 'KFC Double Zinger', 'KFC Zinger Grill', 'KFC Longer', 'KFC Twister Classic', 'KFC Twister Grill', 'KFC Qurrito'].map(
+    (name) => menuOf(name, KFC_MENU),
+  ),
+  menuOf('KFC Hot Wings', KFC_MENU, '8 ks'),
+  menuOf('KFC Hot & Spicy Strips', KFC_MENU, '5 ks'),
+]
+
+const BY_NAME = new Map(FOODS.map((item) => [item.name, item]))
+
+export function findFood(name: string): Food {
+  return BY_NAME.get(name)!
+}
 
 // bez diakritiky a malými písmenami, aby „ryza“ našlo „Ryža“
 const plain = (text: string) =>
