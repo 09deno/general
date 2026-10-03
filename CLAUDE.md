@@ -64,6 +64,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - **Prísady k jedlu:** po výbere jedla „+ Pridať prísadu“ (napr. cestoviny + paradajková omáčka + parmezán); uloží sa **ako jeden riadok** so súčtom (rozhodol majiteľ), názov „A + B + C“.
 - Zoznam potravín (`src/data/foods.ts`, ~400 položiek vrátane omáčok, prísad, jedál a menu z podnikov): bežné potraviny **aj varené jedlá** zo školskej jedálne, reštaurácie a rozvozu (guláš, sviečková, rezeň, halušky, pizza, kebab…) s porciami („1 ks“, „1 porcia“, „1 tanier“ + „100 g“). Orientačné hodnoty na 100 g / 100 ml; vyhľadávanie bez diakritiky a aj podľa iných názvov. Pri zápise sa ukladá aj množstvo (`grams`) a jednotka (`unit` g/ml). Čo sa nenájde, zadá sa ručne.
 - **Najčastejšie a vlastné jedlá:** v „Pridať jedlo“ je navrchu „Často ješ“ (najviac 6, z posledných 60 dní, najčastejšie navrchu) a pri hľadaní „Tvoje jedlá“ – jedným ťuknutím (oranžové +) sa pridajú s hodnotami z posledného zápisu k zvolenému jedlu dňa. Tak si appka pamätá aj jedlá zadané ručne (žiadna zvláštna tabuľka – číta sa z `food_entries`).
+- **Čiarový kód (4.6):** v „Pridať jedlo“ tlačidlo „Naskenovať čiarový kód“ → zadná kamera (knižnica `barcode-detector` so `zxing-wasm`; súbor .wasm sa servíruje z appky, načíta sa až pri skenovaní; funguje aj na iPhone). Číslo sa dá aj opísať. Hľadá sa najprv v tabuľke `products` (výrobky zadané partiou z obalu, **spoločné pre všetkých** – nie sú to osobné údaje), potom v bezplatnej databáze **Open Food Facts** (pri dopyte treba pýtať aj pole `quantity`, inak nevráti veľkosť balenia). Nenájdený výrobok → formulár „Nový výrobok“ (hodnoty z obalu na 100 g/ml) → uloží sa do `products`. Nebalené potraviny kód nemajú – tie sa hľadajú v zozname.
 - **Fotka jedla** (odhad kalórií z fotky): len s umelou inteligenciou, stojí cca 1–2 centy za fotku a je to len odhad. Majiteľ chce **neskôr ako samostatný krok** – bude treba jeho účet u Anthropicu s kreditom (~5 $); kľúč si vloží sám do Supabase (Edge Functions → Secrets), nikdy nie do chatu ani repa.
 - **Podniky v Banskej Bystrici** (majiteľ a kamaráti tam študujú) – v zozname s rýchlymi tlačidlami „Podniky v Banskej Bystrici“:
   - **McDonald's** – oficiálne hodnoty na kus z mcdonalds.sk (2026), presne sedia;
@@ -110,7 +111,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 4.3 Prísady k jedlu (jeden riadok so súčtom) a rozšírený zoznam na ~280 položiek (PR #12)
   - [x] 4.4 Jedlá z podnikov v Banskej Bystrici (Wakaka, KFC, McDonald's, Leviathan) s rýchlymi tlačidlami a menu McDonald's/KFC (PR #12)
   - [x] 4.5 Najčastejšie a vlastné jedlá jedným ťuknutím; omáčky podnikov len v menu (PR #13)
-  - [ ] 4.6 Skenovanie čiarového kódu + Open Food Facts
+  - [x] 4.6 Skenovanie čiarového kódu + Open Food Facts, neznámy výrobok sa zapamätá pre celú partiu (PR #14)
   - [ ] 4.7 (neskôr, platené) Fotka jedla – odhad kalórií umelou inteligenciou
 - [ ] Fáza 5 – Tréning
 - [ ] Fáza 6 – Progres a grafy
