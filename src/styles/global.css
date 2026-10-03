@@ -922,6 +922,16 @@ a {
   color: var(--violet-ink);
 }
 
+/* odškrtnutá položka pri zopakovaní jedla */
+.result--off .result__name,
+.result__unchecked {
+  color: var(--text-muted);
+}
+
+.result__unchecked {
+  flex: none;
+}
+
 /* „Hotovo“ ostáva dole na obrazovke nad navigáciou */
 .plan__done {
   position: sticky;
