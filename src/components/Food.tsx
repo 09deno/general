@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
-import { dayLabel, deleteEntry, loadEntries, MEALS, parseDay, shiftDay, sumEntries, today, type FoodEntry } from '../lib/food'
+import { Plus, Trash2 } from 'lucide-react'
+import { deleteEntry, loadEntries, MEALS, parseDay, sumEntries, today, type FoodEntry } from '../lib/food'
 import type { Targets } from '../lib/goals'
+import DaySwitch from './DaySwitch'
 
 const grams = (value: number) => Number(value).toLocaleString('sk', { maximumFractionDigits: 1 })
 const percent = (value: number, target: number) => `${Math.min(100, target ? (value / target) * 100 : 0)}%`
@@ -65,21 +66,7 @@ export default function Food({ targets }: { targets: Targets }) {
         <h1 className="screen__title">Jedlo</h1>
       </header>
 
-      <div className="day-switch">
-        <button type="button" className="day-switch__button" onClick={() => goToDay(shiftDay(day, -1))} aria-label="Predchádzajúci deň">
-          <ChevronLeft size={22} aria-hidden="true" />
-        </button>
-        <span className="day-switch__label">{dayLabel(day)}</span>
-        <button
-          type="button"
-          className="day-switch__button"
-          onClick={() => goToDay(shiftDay(day, 1))}
-          disabled={day >= today()}
-          aria-label="Ďalší deň"
-        >
-          <ChevronRight size={22} aria-hidden="true" />
-        </button>
-      </div>
+      <DaySwitch day={day} onChange={goToDay} />
 
       <div className="card card--glow remaining">
         <span className={left < 0 ? 'remaining__label remaining__label--over' : 'remaining__label'}>

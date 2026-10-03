@@ -1,96 +1,92 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { ArrowLeft, Check, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
-import { EXERCISES, GROUP_LABELS, GROUPS, KINDS, searchExercises, type Exercise, type ExerciseKind, type MuscleGroup } from '../data/exercises'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Trash2 } from 'lucide-react'
+import type { Exercise } from '../data/exercises'
+import { parseDay, today } from '../lib/food'
+import { findExercise, loadCustomExercises, loadPlan, newDay, savePlan, type Plan, type PlanDay } from '../lib/training'
 import {
-  addCustomExercise,
-  DAY_NAMES,
-  deletePlan,
-  findExercise,
-  loadCustomExercises,
-  loadPlan,
-  newDay,
-  savePlan,
-  splitName,
-  SPLITS,
-  type Plan,
-  type PlanDay,
-} from '../lib/training'
+  createWorkout,
+  deleteWorkout,
+  doneSets,
+  lastSets,
+  loadRecent,
+  nextPlanDay,
+  setLabel,
+  startSets,
+  type Workout,
+} from '../lib/workouts'
+import DaySwitch from './DaySwitch'
+import { exerciseCount, SplitPicker } from './TrainingPlan'
 
-// „1 cvik“, „3 cviky“, „5 cvikov“
-const exerciseCount = (count: number) => (count === 1 ? '1 cvik' : count >= 2 && count <= 4 ? `${count} cviky` : `${count} cvikov`)
+type Loaded = { day: string; plan: Plan | null; custom: Exercise[]; recent: Workout[] }
 
-// Tréning: tréningový plán (split) – dni a cviky v nich. Zápis tréningov príde v ďalšom kroku.
+// Tréning: čo je dnes na rade podľa plánu a zapísané tréningy dňa. Plán sa upravuje na /trening/plan.
 export default function Training() {
-  const [plan, setPlan] = useState<Plan | null | undefined>(undefined)
-  // vždy posledná verzia plánu, aby sa pri rýchlom ťukaní nestratila žiadna zmena
-  const planRef = useRef<Plan | null | undefined>(undefined)
-  const [custom, setCustom] = useState<Exercise[]>([])
+  const navigate = useNavigate()
+  const [params, setParams] = useSearchParams()
+  const day = parseDay(params.get('den'))
+  const [loaded, setLoaded] = useState<Loaded>()
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
-  const [saveError, setSaveError] = useState('')
-  // deň, do ktorého sa práve pridávajú cviky
-  const [pickingDay, setPickingDay] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const [starting, setStarting] = useState(false)
 
   useEffect(() => {
     let active = true
-    Promise.all([loadPlan(), loadCustomExercises()])
-      .then(([loadedPlan, loadedCustom]) => {
-        if (!active) return
-        planRef.current = loadedPlan
-        setPlan(loadedPlan)
-        setCustom(loadedCustom)
-      })
+    Promise.all([loadPlan(), loadCustomExercises(), loadRecent(day)])
+      .then(([plan, custom, recent]) => active && setLoaded({ day, plan, custom, recent }))
       .catch(() => active && setFailed(true))
     return () => {
       active = false
     }
-  }, [attempt])
+  }, [day, attempt])
 
-  const update = async (next: Plan) => {
-    planRef.current = next
-    setPlan(next)
+  const data = loaded?.day === day ? loaded : undefined
+  // tréningy vybraného dňa, v poradí ako sa zapísali
+  const workouts = data ? data.recent.filter((workout) => workout.day === day).reverse() : []
+
+  const goToDay = (next: string) => {
+    setError('')
+    setParams(next === today() ? {} : { den: next }, { replace: true })
+  }
+
+  const start = async (planDay: PlanDay) => {
+    if (!data) return
+    setStarting(true)
+    setError('')
     try {
-      await savePlan(next)
-      setSaveError('')
+      const exercises = planDay.exercises.flatMap((key) => {
+        const exercise = findExercise(key, data.custom)
+        if (!exercise) return []
+        const { name, group, kind } = exercise
+        return [{ key, name, group, kind, sets: startSets(lastSets(data.recent, key)?.sets) }]
+      })
+      const workout = await createWorkout({ day, plan_day_id: planDay.id, name: planDay.name, exercises })
+      navigate(`/trening/zapis/${workout.id}`)
     } catch {
-      setSaveError('Zmenu sa nepodarilo uložiť. Skontroluj internet a skús to znova.')
+      setStarting(false)
+      setError('Tréning sa nepodarilo začať. Skontroluj internet a skús to znova.')
     }
   }
 
-  const changeDay = (dayId: string, change: (day: PlanDay) => PlanDay) => {
-    const current = planRef.current
-    if (current) update({ ...current, days: current.days.map((day) => (day.id === dayId ? change(day) : day)) })
-  }
-
-  const resetPlan = async () => {
+  const remove = async (workout: Workout) => {
     try {
-      await deletePlan()
-      planRef.current = null
-      setPlan(null)
+      await deleteWorkout(workout.id)
+      if (data) setLoaded({ ...data, recent: data.recent.filter((item) => item.id !== workout.id) })
+      setError('')
     } catch {
-      setSaveError('Plán sa nepodarilo zmeniť. Skontroluj internet a skús to znova.')
+      setError('Tréning sa nepodarilo zmazať. Skontroluj internet a skús to znova.')
     }
   }
 
-  const pickingFor = plan?.days.find((day) => day.id === pickingDay)
-  if (plan && pickingFor) {
-    return (
-      <ExercisePicker
-        day={pickingFor}
-        custom={custom}
-        onToggle={(key) =>
-          changeDay(pickingFor.id, (day) => ({
-            ...day,
-            exercises: day.exercises.includes(key) ? day.exercises.filter((item) => item !== key) : [...day.exercises, key],
-          }))
-        }
-        onCreated={(exercise) => {
-          setCustom([...custom, exercise])
-          changeDay(pickingFor.id, (day) => ({ ...day, exercises: [...day.exercises, exercise.key] }))
-        }}
-        onClose={() => setPickingDay(null)}
-      />
-    )
+  const createPlan = async (split: string, days: string[]) => {
+    try {
+      await savePlan({ split, days: days.map(newDay) })
+      // hneď na pridanie cvikov do dní
+      navigate('/trening/plan')
+    } catch {
+      setError('Plán sa nepodarilo uložiť. Skontroluj internet a skús to znova.')
+    }
   }
 
   return (
@@ -102,7 +98,7 @@ export default function Training() {
 
       {failed ? (
         <div className="food__notice">
-          <p>Nepodarilo sa načítať tvoj plán. Skontroluj internet.</p>
+          <p>Nepodarilo sa načítať tréningy. Skontroluj internet.</p>
           <button
             type="button"
             className="text-button"
@@ -114,482 +110,154 @@ export default function Training() {
             Skúsiť znova
           </button>
         </div>
-      ) : plan === null ? (
-        <SplitPicker
-          onPick={(split, days) => update({ split, days: days.map(newDay) })}
-        />
-      ) : plan ? (
-        <PlanEditor
-          plan={plan}
-          custom={custom}
-          onChange={update}
-          onPickExercises={setPickingDay}
-          onReset={resetPlan}
-        />
+      ) : data?.plan === null ? (
+        <SplitPicker onPick={createPlan} />
+      ) : data?.plan ? (
+        <div className="plan">
+          <DaySwitch day={day} onChange={goToDay} />
+
+          {workouts.map((workout) => (
+            <WorkoutCard key={workout.id} workout={workout} onDelete={() => remove(workout)} />
+          ))}
+
+          {workouts.length === 0 && (
+            <StartCard
+              key={day}
+              plan={data.plan}
+              suggested={nextPlanDay(data.plan.days, data.recent)}
+              starting={starting}
+              onStart={start}
+            />
+          )}
+
+          <p className="plan__split training__plan">
+            Tvoj plán: <b>{data.plan.split}</b>
+          </p>
+          <Link to="/trening/plan" className="button button--ghost">
+            Upraviť plán
+          </Link>
+        </div>
       ) : null}
 
-      {saveError && (
+      {error && (
         <p className="food__notice food__notice--error" role="alert">
-          {saveError}
+          {error}
         </p>
       )}
     </section>
   )
 }
 
-// Výber splitu pri prvom otvorení – vlastný (poskladaný z dní) alebo hotový.
-function SplitPicker({ onPick }: { onPick: (split: string, days: string[]) => void }) {
-  const [building, setBuilding] = useState(false)
-
-  if (building) return <SplitBuilder onCreate={(days) => onPick(splitName(days), days)} onCancel={() => setBuilding(false)} />
-
-  return (
-    <div className="plan">
-      <p className="flow__lead">Vyber si, ako trénuješ. Cviky do jednotlivých dní si potom pridáš sám.</p>
-      <button type="button" className="add-extra" onClick={() => setBuilding(true)}>
-        <Plus size={18} aria-hidden="true" />
-        Vytvoriť vlastný split
-      </button>
-      <div className="add-food__group">
-        <span className="add-food__label">Alebo vyber hotový</span>
-        <div className="choices">
-          {SPLITS.map((split) => (
-            <button key={split.name} type="button" className="choice" onClick={() => onPick(split.name, split.days)}>
-              <span className="choice__label">{split.name}</span>
-              <span className="choice__hint">{split.hint}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Vlastný split: dni sa ťukajú v poradí, ako človek trénuje (napr. Push, Pull, Legs, Upper).
-function SplitBuilder({ onCreate, onCancel }: { onCreate: (days: string[]) => void; onCancel: () => void }) {
-  const [days, setDays] = useState<string[]>([])
-  const [custom, setCustom] = useState('')
-
-  const addCustom = (event: FormEvent) => {
-    event.preventDefault()
-    const name = custom.trim().slice(0, 30)
-    if (!name) return
-    setDays((current) => [...current, name])
-    setCustom('')
-  }
+// Deň, ktorý je na rade (po Push príde Pull…), s možnosťou vybrať iný deň plánu.
+function StartCard(props: {
+  plan: Plan
+  suggested: PlanDay | undefined
+  starting: boolean
+  onStart: (day: PlanDay) => void
+}) {
+  const { plan } = props
+  const [chosenId, setChosenId] = useState(props.suggested?.id)
+  const chosen = plan.days.find((day) => day.id === chosenId) ?? props.suggested
+  if (!chosen) return null
 
   return (
-    <div className="plan">
-      <p className="flow__lead">Ťukaj dni v poradí, ako trénuješ. Ten istý deň môže byť aj viackrát.</p>
-
-      <div className="add-food__group">
-        <span className="add-food__label">Pridať deň</span>
-        <div className="chips">
-          {DAY_NAMES.map((name) => (
-            <button key={name} type="button" className="chip" onClick={() => setDays((current) => [...current, name])}>
-              {name}
-            </button>
-          ))}
-        </div>
-        <form className="split-builder__custom" onSubmit={addCustom}>
-          <input
-            className="field"
-            type="text"
-            value={custom}
-            onChange={(event) => setCustom(event.target.value)}
-            placeholder="alebo napíš vlastný deň"
-            aria-label="Vlastný názov dňa"
-            maxLength={30}
-            autoComplete="off"
-          />
-          <button type="submit" className="button button--ghost" disabled={!custom.trim()}>
-            Pridať
+    <>
+      <div className="card card--glow workout-start">
+        <span className="remaining__label">Na rade je</span>
+        <p className="workout-start__name">{chosen.name}</p>
+        <p className="workout-start__info">
+          {chosen.exercises.length > 0 ? exerciseCount(chosen.exercises.length) : 'Tento deň ešte nemá cviky.'}
+        </p>
+        {chosen.exercises.length > 0 ? (
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={() => props.onStart(chosen)}
+            disabled={props.starting}
+          >
+            Začať tréning
           </button>
-        </form>
-      </div>
-
-      <div className="add-food__group">
-        <span className="add-food__label">Tvoj split</span>
-        {days.length === 0 ? (
-          <p className="plan-day__empty">Zatiaľ žiadne dni – ťukni napr. na Push.</p>
         ) : (
-          <ul className="extras">
-            {days.map((name, index) => (
-              <li key={index} className="extra extra--single">
-                <span className="extra__name">
-                  {index + 1}. {name}
-                </span>
-                <button
-                  type="button"
-                  className="extra__remove"
-                  onClick={() => setDays((current) => current.filter((_, i) => i !== index))}
-                  aria-label={`Odobrať ${name}`}
-                >
-                  <X size={18} aria-hidden="true" />
-                </button>
-              </li>
-            ))}
-          </ul>
+          <Link to="/trening/plan" className="button button--primary">
+            Pridať cviky
+          </Link>
         )}
       </div>
 
-      <button type="button" className="button button--primary" disabled={days.length === 0} onClick={() => onCreate(days)}>
-        Vytvoriť split
-      </button>
-      <button type="button" className="text-button" onClick={onCancel}>
-        Späť na hotové splity
-      </button>
-    </div>
+      {plan.days.length > 1 && (
+        <div className="add-food__group">
+          <span className="add-food__label">Iný deň z plánu</span>
+          <div className="chips">
+            {plan.days.map((day) => (
+              <button
+                key={day.id}
+                type="button"
+                className={day.id === chosen.id ? 'chip chip--selected' : 'chip'}
+                onClick={() => setChosenId(day.id)}
+              >
+                {day.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
-function PlanEditor(props: {
-  plan: Plan
-  custom: Exercise[]
-  onChange: (plan: Plan) => void
-  onPickExercises: (dayId: string) => void
-  onReset: () => void
-}) {
-  const { plan, custom, onChange } = props
-  const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
-  const [confirmReset, setConfirmReset] = useState(false)
-
-  const saveName = (event: FormEvent) => {
-    event.preventDefault()
-    if (!renaming) return
-    const name = renaming.name.trim().slice(0, 30)
-    if (name) onChange({ ...plan, days: plan.days.map((day) => (day.id === renaming.id ? { ...day, name } : day)) })
-    setRenaming(null)
-  }
-
-  const addDay = () => {
-    const day = newDay(`Deň ${plan.days.length + 1}`)
-    onChange({ ...plan, days: [...plan.days, day] })
-    setRenaming({ id: day.id, name: day.name })
-  }
+// Zapísaný tréning: cviky s odcvičenými sériami.
+function WorkoutCard({ workout, onDelete }: { workout: Workout; onDelete: () => void }) {
+  const [confirm, setConfirm] = useState(false)
+  const done = workout.exercises.filter((exercise) => doneSets(exercise).length > 0)
 
   return (
-    <div className="plan">
-      <p className="plan__split">
-        Tvoj plán: <b>{plan.split}</b>
-      </p>
-
-      {plan.days.map((day) => (
-        <section key={day.id} className="card plan-day">
-          {renaming?.id === day.id ? (
-            <form className="plan-day__rename" onSubmit={saveName}>
-              <input
-                className="field"
-                type="text"
-                value={renaming.name}
-                onChange={(event) => setRenaming({ id: day.id, name: event.target.value })}
-                aria-label="Názov dňa"
-                maxLength={30}
-                autoFocus
-              />
-              <button type="submit" className="plan-day__icon" aria-label="Uložiť názov">
-                <Check size={20} aria-hidden="true" />
-              </button>
-            </form>
-          ) : confirmDelete === day.id ? (
-            <div className="plan-day__confirm">
-              <span>Zmazať deň „{day.name}“?</span>
-              <button
-                type="button"
-                className="entry__confirm"
-                onClick={() => {
-                  onChange({ ...plan, days: plan.days.filter((item) => item.id !== day.id) })
-                  setConfirmDelete(null)
-                }}
-              >
-                Zmazať
-              </button>
-              <button type="button" className="entry__cancel" onClick={() => setConfirmDelete(null)}>
-                Nie
-              </button>
-            </div>
-          ) : (
-            <div className="plan-day__header">
-              <h2 className="plan-day__name">{day.name}</h2>
-              <button
-                type="button"
-                className="plan-day__icon"
-                onClick={() => setRenaming({ id: day.id, name: day.name })}
-                aria-label={`Premenovať ${day.name}`}
-              >
-                <Pencil size={18} aria-hidden="true" />
-              </button>
-              {plan.days.length > 1 && (
-                <button
-                  type="button"
-                  className="plan-day__icon"
-                  onClick={() => setConfirmDelete(day.id)}
-                  aria-label={`Zmazať ${day.name}`}
-                >
-                  <Trash2 size={18} aria-hidden="true" />
-                </button>
-              )}
-            </div>
-          )}
-
-          {day.exercises.length === 0 ? (
-            <p className="plan-day__empty">Zatiaľ žiadne cviky.</p>
-          ) : (
-            <ul className="plan-day__list">
-              {day.exercises.map((key) => {
-                const exercise = findExercise(key, custom)
-                return (
-                  <li key={key} className="plan-exercise">
-                    <span className="plan-exercise__text">
-                      <span className="plan-exercise__name">{exercise?.name ?? 'Zmazaný cvik'}</span>
-                      {exercise && <span className="plan-exercise__group">{GROUP_LABELS[exercise.group]}</span>}
-                    </span>
-                    <button
-                      type="button"
-                      className="extra__remove"
-                      onClick={() =>
-                        onChange({
-                          ...plan,
-                          days: plan.days.map((item) =>
-                            item.id === day.id ? { ...item, exercises: item.exercises.filter((other) => other !== key) } : item,
-                          ),
-                        })
-                      }
-                      aria-label={`Odobrať ${exercise?.name ?? 'cvik'}`}
-                    >
-                      <X size={18} aria-hidden="true" />
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-
-          <button type="button" className="add-extra" onClick={() => props.onPickExercises(day.id)}>
-            <Plus size={18} aria-hidden="true" />
-            Pridať cviky
-          </button>
-        </section>
-      ))}
-
-      <button type="button" className="button button--ghost" onClick={addDay}>
-        <Plus size={18} aria-hidden="true" />
-        Pridať deň
-      </button>
-
-      {confirmReset ? (
+    <section className="card plan-day">
+      {confirm ? (
         <div className="plan-day__confirm">
-          <span>Zmeniť split? Tvoje dni a cviky sa vymažú.</span>
-          <button type="button" className="entry__confirm" onClick={props.onReset}>
-            Zmeniť
+          <span>Zmazať tréning „{workout.name}“?</span>
+          <button type="button" className="entry__confirm" onClick={onDelete}>
+            Zmazať
           </button>
-          <button type="button" className="entry__cancel" onClick={() => setConfirmReset(false)}>
+          <button type="button" className="entry__cancel" onClick={() => setConfirm(false)}>
             Nie
           </button>
         </div>
       ) : (
-        <button type="button" className="text-button" onClick={() => setConfirmReset(true)}>
-          Zmeniť split
-        </button>
-      )}
-    </div>
-  )
-}
-
-// Pridávanie cvikov do dňa: ťuknutím pridať (✓) alebo odobrať, prípadne vytvoriť vlastný cvik.
-function ExercisePicker(props: {
-  day: PlanDay
-  custom: Exercise[]
-  onToggle: (key: string) => void
-  onCreated: (exercise: Exercise) => void
-  onClose: () => void
-}) {
-  const { day, custom } = props
-  const [query, setQuery] = useState('')
-  const [creating, setCreating] = useState(false)
-  const { items: found, exact } = searchExercises([...EXERCISES, ...custom], query)
-
-  return (
-    <section className="screen">
-      <header className="screen__header add-food__header">
-        <button type="button" className="flow__back" onClick={props.onClose} aria-label="Späť">
-          <ArrowLeft size={24} aria-hidden="true" />
-        </button>
-        <div className="add-food__heading">
-          <h1 className="add-food__title">Pridať cviky</h1>
-          <span className="add-food__day">do dňa {day.name}</span>
+        <div className="plan-day__header">
+          <h2 className="plan-day__name">{workout.name}</h2>
+          <button
+            type="button"
+            className="plan-day__icon"
+            onClick={() => setConfirm(true)}
+            aria-label={`Zmazať tréning ${workout.name}`}
+          >
+            <Trash2 size={18} aria-hidden="true" />
+          </button>
         </div>
-      </header>
+      )}
 
-      <div className="add-food">
-        {creating ? (
-          <CustomExerciseForm
-            initialName={query}
-            onCancel={() => setCreating(false)}
-            onCreated={(exercise) => {
-              props.onCreated(exercise)
-              setCreating(false)
-              setQuery('')
-            }}
-          />
-        ) : (
-          <>
-            <label className="search">
-              <Search className="search__icon" size={20} aria-hidden="true" />
-              <input
-                className="field search__input"
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Hľadaj, napr. bench, drep, zhyby"
-                aria-label="Hľadať cvik"
-                autoComplete="off"
-              />
-            </label>
+      {done.length === 0 ? (
+        <p className="plan-day__empty">Zatiaľ žiadna odcvičená séria.</p>
+      ) : (
+        <ul className="plan-day__list">
+          {done.map((exercise) => (
+            <li key={exercise.key} className="plan-exercise">
+              <span className="plan-exercise__text">
+                <span className="plan-exercise__name">{exercise.name}</span>
+                <span className="workout-card__sets">
+                  {doneSets(exercise)
+                    .map((set) => setLabel(exercise.kind, set))
+                    .join(' · ')}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
 
-            {/* navrchu, aby sa nemuselo prechádzať celým zoznamom */}
-            <button type="button" className="add-extra" onClick={() => setCreating(true)}>
-              <Plus size={18} aria-hidden="true" />
-              Pridať vlastný cvik
-            </button>
-            {!exact && (
-              <p className="search__hint">
-                {found.length === 0
-                  ? 'Taký cvik v zozname nie je – pridaj si ho ako vlastný.'
-                  : 'Presne taký cvik v zozname nie je. Podobné sú nižšie, alebo si ho pridaj ako vlastný.'}
-              </p>
-            )}
-
-            {GROUPS.map((group) => {
-              const items = found.filter((exercise) => exercise.group === group.value)
-              if (items.length === 0) return null
-              return (
-                <div key={group.value} className="add-food__group">
-                  <span className="add-food__label">{group.label}</span>
-                  <ul className="results">
-                    {items.map((exercise) => {
-                      const added = day.exercises.includes(exercise.key)
-                      return (
-                        <li key={exercise.key}>
-                          <button
-                            type="button"
-                            className={added ? 'result result--added' : 'result'}
-                            onClick={() => props.onToggle(exercise.key)}
-                            aria-pressed={added}
-                          >
-                            <span className="result__text">
-                              <span className="result__name">{exercise.name}</span>
-                              <span className="result__info">
-                                {KINDS.find((kind) => kind.value === exercise.kind)?.label}
-                                {exercise.key.startsWith('custom:') && ' · vlastný'}
-                              </span>
-                            </span>
-                            {added ? (
-                              <Check className="result__check" size={22} aria-hidden="true" />
-                            ) : (
-                              <Plus size={20} aria-hidden="true" />
-                            )}
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              )
-            })}
-            <div className="plan__done">
-              <button type="button" className="button button--primary" onClick={props.onClose}>
-                Hotovo ({exerciseCount(day.exercises.length)})
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+      <Link to={`/trening/zapis/${workout.id}`} className="add-extra">
+        {workout.day === today() ? 'Pokračovať v tréningu' : 'Upraviť tréning'}
+      </Link>
     </section>
-  )
-}
-
-function CustomExerciseForm(props: { initialName: string; onCancel: () => void; onCreated: (exercise: Exercise) => void }) {
-  const [name, setName] = useState(props.initialName)
-  const [group, setGroup] = useState<MuscleGroup>('chest')
-  const [kind, setKind] = useState<ExerciseKind>('weight')
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  const submit = async (event: FormEvent) => {
-    event.preventDefault()
-    if (!name.trim()) return setError('Napíš názov cviku.')
-    setBusy(true)
-    setError('')
-    try {
-      const clean = name.trim().slice(0, 60)
-      // „tlaky na smith“ → „Tlaky na smith“
-      props.onCreated(await addCustomExercise(clean.charAt(0).toUpperCase() + clean.slice(1), group, kind))
-    } catch {
-      setBusy(false)
-      setError('Nepodarilo sa uložiť. Skontroluj internet a skús to znova.')
-    }
-  }
-
-  return (
-    <form className="add-food" onSubmit={submit}>
-      <label className="add-food__group">
-        <span className="add-food__label">Názov cviku</span>
-        <input
-          className="field"
-          type="text"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="napr. Incline Hammer Press"
-          maxLength={60}
-          autoComplete="off"
-        />
-      </label>
-
-      <div className="add-food__group">
-        <span className="add-food__label">Partia</span>
-        <div className="chips">
-          {GROUPS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              className={option.value === group ? 'chip chip--selected' : 'chip'}
-              onClick={() => setGroup(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="add-food__group">
-        <span className="add-food__label">Ako sa meria</span>
-        <div className="chips">
-          {KINDS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              className={option.value === kind ? 'chip chip--selected' : 'chip'}
-              onClick={() => setKind(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {error && (
-        <p className="flow__message flow__message--error" role="alert">
-          {error}
-        </p>
-      )}
-      <button type="submit" className="button button--primary" disabled={busy}>
-        {busy ? 'Ukladám…' : 'Pridať cvik'}
-      </button>
-      <button type="button" className="text-button" onClick={props.onCancel}>
-        Späť na zoznam cvikov
-      </button>
-    </form>
   )
 }

@@ -9,6 +9,8 @@ import Onboarding from './components/Onboarding'
 import Screen from './components/Screen'
 import Settings from './components/Settings'
 import Training from './components/Training'
+import TrainingPlan from './components/TrainingPlan'
+import WorkoutLog from './components/WorkoutLog'
 import { targetsFromRow } from './lib/goals'
 import { useGoals } from './lib/useGoals'
 import { useSession } from './lib/useSession'
@@ -71,6 +73,8 @@ function SignedIn({ userId }: { userId: string }) {
             />
           ))}
           <Route path="/jedlo/pridat" element={<AddFood />} />
+          <Route path="/trening/plan" element={<TrainingPlan />} />
+          <Route path="/trening/zapis/:id" element={<WorkoutLog />} />
           <Route path="*" element={<Navigate to="/jedlo" replace />} />
         </Routes>
       </main>
