@@ -12,6 +12,16 @@ export const MEALS: { value: Meal; label: string }[] = [
   { value: 'snack', label: 'Snack' },
 ]
 
+// „Naposledy na raňajky / desiatu / obed …“
+export const MEAL_AFTER_NA: Record<Meal, string> = {
+  breakfast: 'raňajky',
+  morning_snack: 'desiatu',
+  lunch: 'obed',
+  afternoon_snack: 'olovrant',
+  dinner: 'večeru',
+  snack: 'snack',
+}
+
 export type FoodEntry = {
   id: string
   meal: Meal
@@ -113,8 +123,36 @@ export async function loadHistory(): Promise<HistoryItem[]> {
   return [...byName.values()].sort((a, b) => b.count - a.count)
 }
 
+// jedlo, ktoré si mal naposledy (napr. raňajky v piatok) – na zopakovanie
+export type LastMeal = { day: string; entries: FoodEntry[] }
+
+// Pre každé jedlo dňa: čo si naň mal naposledy pred daným dňom (najviac 60 dní dozadu).
+export async function loadLastMeals(before: string): Promise<Partial<Record<Meal, LastMeal>>> {
+  const { data, error } = await supabase
+    .from('food_entries')
+    .select('id, day, meal, name, kcal, protein_g, carbs_g, fat_g, grams, unit')
+    .lt('day', before)
+    .gte('day', shiftDay(before, -60))
+    .order('day', { ascending: false })
+    .order('created_at')
+    .limit(1000)
+  if (error) throw error
+  const last: Partial<Record<Meal, LastMeal>> = {}
+  for (const { day, ...entry } of data as (FoodEntry & { day: string })[]) {
+    const found = last[entry.meal]
+    if (!found) last[entry.meal] = { day, entries: [entry] }
+    else if (found.day === day) found.entries.push(entry)
+  }
+  return last
+}
+
 export async function addEntry(entry: NewFoodEntry) {
   const { error } = await supabase.from('food_entries').insert(entry)
+  if (error) throw error
+}
+
+export async function addEntries(entries: NewFoodEntry[]) {
+  const { error } = await supabase.from('food_entries').insert(entries)
   if (error) throw error
 }
 

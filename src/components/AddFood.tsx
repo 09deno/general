@@ -1,16 +1,22 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Plus, ScanBarcode, Search, X } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Circle, CircleCheck, Plus, ScanBarcode, Search, X } from 'lucide-react'
 import { findFood, matchesQuery, nutrition, searchFoods, type Food, type Menu } from '../data/foods'
 import {
+  addEntries,
   addEntry,
   dayLabel,
   loadHistory,
+  loadLastMeals,
+  MEAL_AFTER_NA,
   mealForNow,
   MEALS,
   parseDay,
+  sumEntries,
   today,
+  type FoodEntry,
   type HistoryItem,
+  type LastMeal,
   type Meal,
   type NewFoodEntry,
 } from '../lib/food'
@@ -81,6 +87,8 @@ export default function AddFood() {
   const [busy, setBusy] = useState(false)
   // tvoje jedlá z histórie – najčastejšie sa pridajú jedným ťuknutím
   const [history, setHistory] = useState<HistoryItem[]>([])
+  // čo si mal naposledy na každé jedlo dňa – dá sa zopakovať
+  const [lastMeals, setLastMeals] = useState<Partial<Record<Meal, LastMeal>>>({})
   // čiarový kód: skenovanie, hľadanie výrobku, alebo neznámy výrobok na zadanie z obalu
   const [scanning, setScanning] = useState(false)
   const [lookup, setLookup] = useState<{ code: string; status: 'loading' | 'unknown' | 'error'; name?: string } | null>(null)
@@ -92,10 +100,15 @@ export default function AddFood() {
       .catch(() => {
         // bez histórie sa dá jedlo stále vyhľadať
       })
+    loadLastMeals(day)
+      .then((meals) => active && setLastMeals(meals))
+      .catch(() => {
+        // bez minulých jedál sa dá jedlo stále vyhľadať
+      })
     return () => {
       active = false
     }
-  }, [])
+  }, [day])
 
   const close = () => navigate(day === today() ? '/jedlo' : `/jedlo?den=${day}`, { replace: true })
 
@@ -145,6 +158,31 @@ export default function AddFood() {
       } else setLookup({ code, status: 'unknown', name: result.name })
     } catch {
       setLookup({ code, status: 'error' })
+    }
+  }
+
+  // zopakovanie: vybrané položky z minula k zvolenému jedlu dňa
+  const repeat = async (entries: FoodEntry[]) => {
+    setBusy(true)
+    setError('')
+    try {
+      await addEntries(
+        entries.map(({ name, kcal, protein_g, carbs_g, fat_g, grams, unit }) => ({
+          day,
+          meal,
+          name,
+          kcal,
+          protein_g,
+          carbs_g,
+          fat_g,
+          grams,
+          unit,
+        })),
+      )
+      close()
+    } catch {
+      setBusy(false)
+      setError('Nepodarilo sa uložiť. Skontroluj internet a skús to znova.')
     }
   }
 
@@ -339,6 +377,12 @@ export default function AddFood() {
               places
               history={history}
               busy={busy}
+              top={
+                lastMeals[meal] && (
+                  // key: pri inom jedle začína výber znova so všetkým zaškrtnutým
+                  <RepeatMeal key={meal} meal={meal} last={lastMeals[meal]} busy={busy} onAdd={repeat} />
+                )
+              }
               onQuickAdd={quickAdd}
               onScan={() => setScanning(true)}
               onPick={pick}
@@ -478,6 +522,8 @@ function FoodSearch(props: {
   places?: boolean
   history?: HistoryItem[]
   busy?: boolean
+  // nad „Často ješ“, kým sa nič nehľadá
+  top?: ReactNode
   onQuickAdd?: (item: HistoryItem) => void
   onScan?: () => void
   onPick: (food: Food) => void
@@ -536,6 +582,7 @@ function FoodSearch(props: {
 
       {query.trim() === '' ? (
         <>
+          {props.top}
           {history.length > 0 && (
             <div className="add-food__group">
               <span className="add-food__label">Často ješ – pridáš jedným ťuknutím</span>
@@ -591,6 +638,61 @@ function FoodSearch(props: {
         </>
       )}
     </>
+  )
+}
+
+// Čo si mal naposledy na toto jedlo – všetko je zaškrtnuté, čo si dnes nemal, odškrtneš.
+function RepeatMeal(props: { meal: Meal; last: LastMeal; busy: boolean; onAdd: (entries: FoodEntry[]) => void }) {
+  const { last } = props
+  const [skipped, setSkipped] = useState<string[]>([])
+  const chosen = last.entries.filter((entry) => !skipped.includes(entry.id))
+
+  const toggle = (id: string) =>
+    setSkipped((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]))
+
+  return (
+    <div className="add-food__group">
+      <span className="add-food__label">
+        Naposledy na {MEAL_AFTER_NA[props.meal]} · {dayLabel(last.day)}
+      </span>
+      <ul className="results">
+        {last.entries.map((entry) => {
+          const on = !skipped.includes(entry.id)
+          return (
+            <li key={entry.id}>
+              <button
+                type="button"
+                className={on ? 'result' : 'result result--off'}
+                onClick={() => toggle(entry.id)}
+                aria-pressed={on}
+              >
+                <span className="result__text">
+                  <span className="result__name">{entry.name}</span>
+                  <span className="result__info">
+                    {entry.grams ? `${amount(Number(entry.grams))} ${entry.unit} · ` : ''}
+                    {entry.kcal.toLocaleString('sk')} kcal
+                  </span>
+                </span>
+                {on ? (
+                  <CircleCheck className="result__check" size={24} aria-hidden="true" />
+                ) : (
+                  <Circle className="result__unchecked" size={24} aria-hidden="true" />
+                )}
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+      <button
+        type="button"
+        className="button button--primary"
+        disabled={props.busy || chosen.length === 0}
+        onClick={() => props.onAdd(chosen)}
+      >
+        {chosen.length === last.entries.length ? 'Pridať všetko' : 'Pridať vybrané'} ·{' '}
+        {sumEntries(chosen).kcal.toLocaleString('sk')} kcal
+      </button>
+    </div>
   )
 }
 
