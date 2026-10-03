@@ -7,6 +7,16 @@ import type { Targets } from '../lib/goals'
 const grams = (value: number) => Number(value).toLocaleString('sk', { maximumFractionDigits: 1 })
 const percent = (value: number, target: number) => `${Math.min(100, target ? (value / target) * 100 : 0)}%`
 
+// „150 g · B 4 g · S 42 g · T 0,5 g“ – množstvo a živiny, ak sú známe
+function details(entry: FoodEntry) {
+  const parts = []
+  if (entry.grams) parts.push(`${grams(entry.grams)} ${entry.unit}`)
+  if (Number(entry.protein_g) + Number(entry.carbs_g) + Number(entry.fat_g) > 0) {
+    parts.push(`B ${grams(entry.protein_g)} g · S ${grams(entry.carbs_g)} g · T ${grams(entry.fat_g)} g`)
+  }
+  return parts.join(' · ')
+}
+
 // Jedlo: koľko kalórií ešte zostáva, zoznam zjedeného podľa jedál a prepínanie dní.
 export default function Food({ targets }: { targets: Targets }) {
   const [params, setParams] = useSearchParams()
@@ -145,11 +155,7 @@ export default function Food({ targets }: { targets: Targets }) {
                       <>
                         <div className="entry__text">
                           <span className="entry__name">{entry.name}</span>
-                          {Number(entry.protein_g) + Number(entry.carbs_g) + Number(entry.fat_g) > 0 && (
-                            <span className="entry__macros">
-                              B {grams(entry.protein_g)} g · S {grams(entry.carbs_g)} g · T {grams(entry.fat_g)} g
-                            </span>
-                          )}
+                          {details(entry) && <span className="entry__macros">{details(entry)}</span>}
                         </div>
                         <span className="entry__kcal">{entry.kcal.toLocaleString('sk')} kcal</span>
                         <button

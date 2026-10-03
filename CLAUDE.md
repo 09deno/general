@@ -57,11 +57,13 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - Jednotky kg a cm, týždeň začína pondelkom, čas Europe/Bratislava.
 
 ### Jedlo
-- Deň sa delí na **Raňajky / Desiata / Obed / Olovrant / Večera**. Pri pridaní appka jedlo **predvyberie podľa času** (do 10:00 raňajky, do 11:30 desiata, do 14:30 obed, do 17:00 olovrant, potom večera), dá sa jedným ťuknutím zmeniť (obed býva aj o 11 či o 15).
+- Deň sa delí na **Raňajky / Desiata / Obed / Olovrant / Večera / Snack**. Pri pridaní appka jedlo **predvyberie podľa času** (do 10:00 raňajky, do 11:30 desiata, do 14:30 obed, do 17:00 olovrant, potom večera), dá sa jedným ťuknutím zmeniť (obed býva aj o 11 či o 15). **Snack** (želanie majiteľa) sa nepredvyberá nikdy – môže byť kedykoľvek.
 - Hlavná karta: veľké „Zostáva X kcal“, pruh zjedeného a bielkoviny / sacharidy / tuky „zjedené / cieľ“. Pri prekročení **pokojne** „Nad cieľom o X kcal“ oranžovou (rozhodol majiteľ).
 - Prepínanie dní šípkami (spätný zápis áno, do budúcnosti nie); deň je v adrese `/jedlo?den=YYYY-MM-DD`. Zoznam podľa jedál so súčtom; mazanie ikonou koša s potvrdením „Zmazať? / Nie“.
 - Uloženie: tabuľka `food_entries` (deň podľa Europe/Bratislava), každý vidí, pridáva a maže len svoje.
-- Fáza 4 po krokoch: 4.1 obrazovka + ručné pridanie → 4.2 vyhľadávanie ~100 bežných potravín s gramami → 4.3 vlastné a najčastejšie jedlá → 4.4 skenovanie čiarového kódu.
+- Zoznam potravín (`src/data/foods.ts`, ~150 položiek): bežné potraviny **aj varené jedlá** zo školskej jedálne, reštaurácie a rozvozu (guláš, sviečková, rezeň, halušky, pizza, kebab…) s porciami („1 ks“, „1 porcia“, „1 tanier“ + „100 g“). Orientačné hodnoty na 100 g / 100 ml; vyhľadávanie bez diakritiky a aj podľa iných názvov. Pri zápise sa ukladá aj množstvo (`grams`) a jednotka (`unit` g/ml). Čo sa nenájde, zadá sa ručne.
+- **Fotka jedla** (odhad kalórií z fotky): len s umelou inteligenciou, stojí cca 1–2 centy za fotku a je to len odhad. Majiteľ chce **neskôr ako samostatný krok** – bude treba jeho účet u Anthropicu s kreditom (~5 $); kľúč si vloží sám do Supabase (Edge Functions → Secrets), nikdy nie do chatu ani repa.
+- Fáza 4 po krokoch: 4.1 obrazovka + ručné pridanie → 4.2 vyhľadávanie potravín a varených jedál s gramami → 4.3 vlastné a najčastejšie jedlá → 4.4 skenovanie čiarového kódu → 4.5 (neskôr) fotka jedla s AI.
 - Sledujeme **kcal, bielkoviny, sacharidy aj tuky**. Výrazne zobrazovať „Zostáva X kcal“ (aby každý vedel, koľko si ešte môže dovoliť). Cukor a soľ zvlášť nesledujeme.
 - Zdroje potravín: skenovanie čiarových kódov kamerou + bezplatná databáza **Open Food Facts**, vlastný zoznam ~100 bežných nebalených potravín (orientačné hodnoty z verejných tabuliek), čo sa nenájde, zadá sa raz ručne a appka si to zapamätá.
 - Hodnoty na 100 g → množstvo v gramoch, s rýchlymi tlačidlami („1 ks“, „1 porcia“, „100 g“).
@@ -95,9 +97,10 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
   - [x] 3.3 „Chcem to rozpísať“ pri otázke o športe – fitko, iný šport a práca zvlášť (PR #9)
 - [ ] Fáza 4 – Jedlo
   - [x] 4.1 Obrazovka Jedlo („Zostáva X kcal“, makroživiny, dni, zoznam podľa jedál, mazanie) a ručné pridanie jedla (PR #10)
-  - [ ] 4.2 Vyhľadávanie ~100 bežných potravín, gramy a rýchle tlačidlá („1 ks“, „1 porcia“, „100 g“)
+  - [x] 4.2 Vyhľadávanie ~150 potravín a varených jedál, gramy/ml a rýchle tlačidlá („1 ks“, „1 porcia“, „100 g“), Snack medzi jedlami (PR #11)
   - [ ] 4.3 Vlastné jedlá a najčastejšie jedlá jedným ťuknutím
   - [ ] 4.4 Skenovanie čiarového kódu + Open Food Facts
+  - [ ] 4.5 (neskôr, platené) Fotka jedla – odhad kalórií umelou inteligenciou
 - [ ] Fáza 5 – Tréning
 - [ ] Fáza 6 – Progres a grafy
 - [ ] Fáza 7 – Nastavenia, doladenie, prípadne sociálne funkcie (otázka, čo majú kamaráti navzájom vidieť – len sa spýtať, nestavať)

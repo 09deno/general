@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-export type Meal = 'breakfast' | 'morning_snack' | 'lunch' | 'afternoon_snack' | 'dinner'
+export type Meal = 'breakfast' | 'morning_snack' | 'lunch' | 'afternoon_snack' | 'dinner' | 'snack'
 
 export const MEALS: { value: Meal; label: string }[] = [
   { value: 'breakfast', label: 'Raňajky' },
@@ -8,6 +8,8 @@ export const MEALS: { value: Meal; label: string }[] = [
   { value: 'lunch', label: 'Obed' },
   { value: 'afternoon_snack', label: 'Olovrant' },
   { value: 'dinner', label: 'Večera' },
+  // snack môže byť kedykoľvek – appka ho sama nepredvyberá
+  { value: 'snack', label: 'Snack' },
 ]
 
 export type FoodEntry = {
@@ -18,6 +20,9 @@ export type FoodEntry = {
   protein_g: number
   carbs_g: number
   fat_g: number
+  // množstvo, ak je jedlo zo zoznamu potravín (nápoje v ml)
+  grams: number | null
+  unit: 'g' | 'ml'
 }
 
 export type NewFoodEntry = Omit<FoodEntry, 'id'> & { day: string }
@@ -78,7 +83,7 @@ export function sumEntries(entries: FoodEntry[]) {
 export async function loadEntries(day: string): Promise<FoodEntry[]> {
   const { data, error } = await supabase
     .from('food_entries')
-    .select('id, meal, name, kcal, protein_g, carbs_g, fat_g')
+    .select('id, meal, name, kcal, protein_g, carbs_g, fat_g, grams, unit')
     .eq('day', day)
     .order('created_at')
   if (error) throw error
