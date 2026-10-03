@@ -512,6 +512,33 @@ a {
   pointer-events: none;
 }
 
+/* rozpísaná aktivita */
+.detail {
+  display: grid;
+  gap: 10px;
+}
+
+.detail__heading {
+  margin: 0 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.detail__result {
+  margin: 0;
+  font-size: 15px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.detail__result b {
+  font-weight: 600;
+  color: var(--violet-ink);
+}
+
 /* ---------- Výsledok: denný cieľ ---------- */
 .target {
   padding: 20px 20px 22px;

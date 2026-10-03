@@ -47,9 +47,11 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 
 ### Ciele a onboarding
 - **Hlavná zásada majiteľa (platí pre celú appku): čo najjednoduchšie a najzrozumiteľnejšie, aby to zvládol aj úplný amatér.** Obyčajné slová namiesto odborných, minimum písania, zložitosť riešiť v pozadí.
-- Úvodné otázky sa ukážu raz po registrácii a nedajú sa preskočiť. Jedna otázka na obrazovku, veľké ťukacie tlačidlá: pohlavie (Muž / Žena) → vek (ukladá sa ako rok narodenia) → výška → váha → „Ako často športuješ?“ (fitko aj iný šport dokopy: skoro vôbec / 1–2× / 3–4× / 5× a viac) → cieľ: Schudnúť / Spevniť postavu (= rekompozícia) / Udržať váhu / Nabrať svaly.
+- Úvodné otázky sa ukážu raz po registrácii a nedajú sa preskočiť. Jedna otázka na obrazovku, veľké ťukacie tlačidlá: pohlavie (Muž / Žena) → vek (ukladá sa ako rok narodenia) → výška → váha → „Ako často športuješ?“ (fitko aj iný šport dokopy: skoro vôbec / 1–2× / 3–4× / 5× a viac / **Chcem to rozpísať**) → cieľ: Schudnúť / Spevniť postavu (= rekompozícia) / Udržať váhu / Nabrať svaly.
+- „Chcem to rozpísať“: zvlášť koľkokrát do týždňa fitko a iný šport (0–14) a práca/škola (väčšinou sedím / veľa chodím alebo stojím / fyzická práca); appka ukáže „Vychádza ti: … aktivita“. Tréningy spolu určia stupeň ako bežné možnosti (0 / 1–2 / 3–4 / 5+), státie/chodenie pridá 1 stupeň, fyzická práca 2; najvyšší stupeň „veľmi vysoká“ (1,9) existuje len takto. Uložené v `goals` (`gym_per_week`, `sport_per_week`, `job`; prázdne pri bežnej možnosti).
+- **Bez umelej inteligencie** (rozhodol majiteľ 3. 10. 2026): vlastné odpovede písaným textom sa nerobia, appka nič neposiela AI službám.
 - Výsledok: jedno veľké číslo kcal, pod ním bielkoviny, sacharidy, tuky a 1–2 vety po ľudsky. Ručná úprava je skrytá pod „Upraviť ručne“ (kcal po 50, bielkoviny po 5 g).
-- Výpočet (`src/lib/goals.ts`): Mifflin-St Jeor × aktivita (1,2 / 1,375 / 1,55 / 1,725) = koľko denne spáli. Cieľ: schudnúť −15 %, spevniť −5 %, udržať 0, nabrať +10 %. Bielkoviny na kg: 2,0 / 2,0 / 1,6 / 1,8 (najviac 40 % kalórií). Tuky 25 % kalórií, zvyšok sacharidy. Zaokrúhlenie kcal na 50, gramy na 5.
+- Výpočet (`src/lib/goals.ts`): Mifflin-St Jeor × aktivita (1,2 / 1,375 / 1,55 / 1,725 / 1,9) = koľko denne spáli. Cieľ: schudnúť −15 %, spevniť −5 %, udržať 0, nabrať +10 %. Bielkoviny na kg: 2,0 / 2,0 / 1,6 / 1,8 (najviac 40 % kalórií). Tuky 25 % kalórií, zvyšok sacharidy. Zaokrúhlenie kcal na 50, gramy na 5.
 - Bezpečnosť: nikdy pod 1 500 kcal (muž) / 1 200 kcal (žena), ani pri ručnej úprave. Bez vekového limitu; mladší ako 18 rokov nikdy pod udržiavací príjem – pri „schudnúť“ a „spevniť“ dostanú udržiavací príjem s vysvetlením.
 - Uloženie: tabuľka `goals` (odpovede + ciele), každý vidí a mení len svoje.
 - Jednotky kg a cm, týždeň začína pondelkom, čas Europe/Bratislava.
@@ -85,6 +87,7 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 - [x] Fáza 3 – onboarding a výpočet cieľov
   - [x] 3.1 Úvodné otázky po registrácii, výpočet a obrazovka „Tvoj denný cieľ“ s ručnou úpravou (PR #7)
   - [x] 3.2 Nastavenia: karta s denným cieľom a tlačidlo „Zmeniť ciele“ – tie isté otázky s predvyplnenými odpoveďami, šípka späť na prvej otázke zruší zmenu, na konci „Uložiť“ (PR #8)
+  - [x] 3.3 „Chcem to rozpísať“ pri otázke o športe – fitko, iný šport a práca zvlášť (PR #9)
 - [ ] Fáza 4 – Jedlo
 - [ ] Fáza 5 – Tréning
 - [ ] Fáza 6 – Progres a grafy
