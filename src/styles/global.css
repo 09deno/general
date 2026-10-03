@@ -15,6 +15,7 @@
   --text: #15121d;
   --text-muted: #686479;
   --violet-ink: #5b2fd6; /* fialová pre text na svetlom pozadí */
+  --danger: #d92d3a; /* chybové hlásenia */
   --nav-bg: rgba(255, 255, 255, 0.88);
   --nav-active: #7c4dff;
 
@@ -45,6 +46,7 @@
     --text: #f4f2fa;
     --text-muted: #8e8aa0;
     --violet-ink: #b49cff;
+    --danger: #ff6b72;
     --nav-bg: rgba(10, 10, 14, 0.86);
     --nav-active: #b49cff;
 
@@ -117,7 +119,8 @@ a {
     background: var(--backdrop);
   }
 
-  .app {
+  .app,
+  .login {
     border-inline: 1px solid var(--border);
   }
 }
@@ -272,6 +275,188 @@ a {
   border: 1px solid var(--border);
 }
 
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- Textové políčko ---------- */
+.field {
+  width: 100%;
+  height: 56px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 18px;
+}
+
+.field::placeholder {
+  color: var(--text-muted);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--nav-active);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+}
+
+/* ---------- Prihlásenie a registrácia ---------- */
+.login {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: var(--column);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: calc(28px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(90% 35% at 50% 108%, var(--glow-soft-bg), transparent 70%),
+    var(--bg);
+}
+
+.login__icon {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.45);
+}
+
+.login__back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -6px 0 0 -10px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.login__title {
+  margin: 18px 0 6px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.login__lead {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-muted);
+}
+
+.login__lead b {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.login__form {
+  display: grid;
+  gap: 12px;
+}
+
+.login__hint {
+  margin: -4px 0 0 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.login__message {
+  min-height: 1.5em;
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.login__message:empty {
+  display: none;
+}
+
+.login__message--error {
+  color: var(--danger);
+}
+
+/* ---------- PIN: bodky a klávesnica ---------- */
+.pin {
+  display: grid;
+  gap: 20px;
+  /* klávesnica dole, na dosah palca */
+  margin-top: auto;
+}
+
+.pin__dots {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.pin__dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--text-muted);
+  border-radius: 50%;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+.pin__dot--filled {
+  background: var(--violet);
+  border-color: var(--violet);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+}
+
+.pin .login__message {
+  display: block;
+  margin-top: -8px;
+}
+
+.pin__keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.pin__key {
+  display: grid;
+  place-items: center;
+  height: min(68px, 9dvh);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 28px;
+  font-weight: 300;
+  cursor: pointer;
+}
+
+.pin__key:active:not(:disabled) {
+  background: var(--violet);
+  border-color: var(--violet);
+  color: #fff;
+}
+
+.pin__key:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pin__key--back {
+  background: transparent;
+  border-color: transparent;
+}
+
 /* ---------- Návod na pridanie na plochu ---------- */
 .install {
   position: fixed;
@@ -380,7 +565,8 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bottom-nav__icon {
+  .bottom-nav__icon,
+  .pin__dot {
     transition: none;
   }
 }

@@ -33,11 +33,16 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 ## Rozhodnutia
 
 ### Účty a prihlásenie
-- Registrácia: **spoločný pozývací kód** (určí majiteľ, dá sa zmeniť; uložený v databáze, nikdy nie v kóde – repo je verejné) + **prezývka** + **6-miestny PIN** (zadáva sa 2× pre kontrolu). Kód kontroluje server, nie len appka.
+- **Jeden postup bez výberu** (žiadna obrazovka „Prihlásiť / Registrovať“): **pozývací kód** → **prezývka** → ak prezývka už existuje, zadá svoj **PIN raz** (prihlásenie, aj na novom zariadení); ak nie, vyberie si **6-miestny PIN** a zopakuje ho (nový účet). Potom je prihlásený.
+- Pozývací kód: slovo, ktoré určil majiteľ, dá sa zmeniť. Je **len v databáze** (tabuľka `app_settings`, kľúč `invite_code`), nikdy v kóde, repe ani v PR – repo je verejné. Pri zadávaní nezáleží na veľkosti písmen ani diakritike.
+- Blokovanie: po **5 nesprávnych pokusoch** sa prihlasovanie na **15 minút** zablokuje – pozývací kód podľa IP adresy, PIN podľa účtu.
+- Kód, prezývku aj PIN kontroluje server, nie len appka.
 - Prezývka: 3–20 znakov, písmená vrátane diakritiky, čísla, podčiarkovník; nezáleží na veľkosti písmen („Marek“ = „marek“).
-- Po prihlásení ostáva používateľ prihlásený natrvalo; PIN treba len na novom zariadení. Bez e-mailu a bez Googlu.
+- Po prihlásení ostáva používateľ prihlásený natrvalo; PIN treba len na novom zariadení. Bez e-mailu a bez Googlu. **Odhlásenie appka nemá** (rozhodol majiteľ 3. 10. 2026).
 - Profil: len prezývka.
-- Zabudnutý PIN: majiteľ ako admin dostane v Nastaveniach tlačidlo „Resetovať PIN“ (Fáza 7); dovtedy reset robí Claude ručne na požiadanie.
+- Zabudnutý PIN: majiteľ ako admin dostane v Nastaveniach tlačidlo „Resetovať PIN“ (Fáza 7); dovtedy reset robí Claude ručne na požiadanie (nové heslo v `auth.users` pre účet z `profiles`, a zmazať jeho riadok v `failed_attempts`).
+- Technicky: registráciu a prihlásenie robí serverová funkcia **`login`** (`supabase/functions/login`, nasadená cez konektor s `verify_jwt = false`). Účet v Supabase Auth má **náhodný vnútorný e-mail** `…@fit-dennik.invalid` (nikam sa neposiela) a heslo = PIN; prezývka je v `profiles`. Migrácie databázy sú v `supabase/migrations/` (aplikované cez konektor).
+- V Supabase Auth **nechať zapnuté „Confirm email“** – inak by sa dal účet založiť mimo appky bez pozývacieho kódu.
 
 ### Ciele a onboarding
 - Bez vekového limitu. Mladší ako 18 rokov: žiadny deficit (udržiavací príjem alebo mierny prebytok).
@@ -66,11 +71,11 @@ Mobilná webová appka (PWA) na sledovanie jedla a tréningu pre majiteľa proje
 
 - [x] Fáza 0 – otázky
 - [x] Fáza 1 – návrh riešenia a vzhľadu
-- [ ] Fáza 2 – kostra a prihlásenie
+- [x] Fáza 2 – kostra a prihlásenie
   - [x] 2.1 Kostra: navigácia Jedlo / Tréning / Progres / Nastavenia, prázdne sekcie (PR #1)
   - [x] 2.2 Appka na plochu: ikona, úvodné obrazovky, manifest, návod na pridanie (PR #2)
   - [x] 2.3 Databáza: Supabase projekt vo Frankfurte, prepojenie s appkou cez `src/lib/supabase.ts` (PR #5). Spojenie overil Claude 3. 10. 2026 (prihlasovací server aj databáza odpovedajú, verejný kľúč platí); v appke sa nič viditeľne nezmenilo (rozhodol majiteľ).
-  - [ ] 2.4 Registrácia (pozývací kód + prezývka + PIN), prihlásenie, odhlásenie
+  - [x] 2.4 Registrácia a prihlásenie jedným postupom (pozývací kód + prezývka + PIN), blokovanie po 5 zlých pokusoch, bez odhlásenia (PR #6)
 - [ ] Fáza 3 – onboarding a výpočet cieľov
 - [ ] Fáza 4 – Jedlo
 - [ ] Fáza 5 – Tréning
