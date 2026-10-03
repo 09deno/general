@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { ArrowLeft, Minus, Plus } from 'lucide-react'
 import TargetCard from './TargetCard'
 import {
+  ACTIVITY_LABELS,
+  activityFromDetail,
   answersFromRow,
   calculate,
   GOAL_LABELS,
@@ -14,10 +16,11 @@ import {
   type Answers,
   type Goal,
   type GoalsRow,
+  type Job,
   type Sex,
 } from '../lib/goals'
 
-type Step = 'sex' | 'age' | 'height' | 'weight' | 'activity' | 'goal' | 'result'
+type Step = 'sex' | 'age' | 'height' | 'weight' | 'activity' | 'activity-detail' | 'goal' | 'result'
 const QUESTIONS: Step[] = ['sex', 'age', 'height', 'weight', 'activity', 'goal']
 
 type OnboardingProps = {
@@ -33,14 +36,20 @@ type OnboardingProps = {
 export default function Onboarding({ userId, onDone, initial, onCancel }: OnboardingProps) {
   const [step, setStep] = useState<Step>('sex')
   const [answers, setAnswers] = useState<Partial<Answers>>(() => (initial ? answersFromRow(initial) : {}))
-  const index = step === 'result' ? QUESTIONS.length : QUESTIONS.indexOf(step)
+  // rozpísaná aktivita patrí k tej istej otázke ako „Ako často športuješ?“
+  const question = step === 'activity-detail' ? 'activity' : step
+  const index = question === 'result' ? QUESTIONS.length : QUESTIONS.indexOf(question)
 
   const answer = (values: Partial<Answers>) => {
     setAnswers({ ...answers, ...values })
     setStep(index + 1 < QUESTIONS.length ? QUESTIONS[index + 1] : 'result')
   }
 
-  const back = () => (index === 0 ? onCancel?.() : setStep(QUESTIONS[index - 1]))
+  const back = () => {
+    if (step === 'activity-detail') setStep('activity')
+    else if (index === 0) onCancel?.()
+    else setStep(QUESTIONS[index - 1])
+  }
 
   return (
     <div className="flow">
@@ -106,7 +115,7 @@ export default function Onboarding({ userId, onDone, initial, onCancel }: Onboar
         />
       )}
       {step === 'activity' && (
-        <ChoiceStep<Activity>
+        <ChoiceStep<Activity | 'detail'>
           title="Ako často športuješ?"
           lead="Fitko aj iný šport dokopy."
           options={[
@@ -114,11 +123,17 @@ export default function Onboarding({ userId, onDone, initial, onCancel }: Onboar
             { value: 'low', label: '1–2× do týždňa' },
             { value: 'medium', label: '3–4× do týždňa' },
             { value: 'high', label: '5× a viac do týždňa' },
+            { value: 'detail', label: 'Chcem to rozpísať', hint: 'Zvlášť fitko, iný šport a práca.' },
           ]}
-          selected={answers.activity}
-          onPick={(activity) => answer({ activity })}
+          selected={answers.job ? 'detail' : answers.activity}
+          onPick={(activity) =>
+            activity === 'detail'
+              ? setStep('activity-detail')
+              : answer({ activity, gymPerWeek: undefined, sportPerWeek: undefined, job: undefined })
+          }
         />
       )}
+      {step === 'activity-detail' && <ActivityDetail answers={answers} onNext={answer} />}
       {step === 'goal' && (
         <ChoiceStep<Goal>
           title="Čo chceš dosiahnuť?"
@@ -239,6 +254,70 @@ function NumberStep(props: {
   )
 }
 
+const JOBS: Option<Job>[] = [
+  { value: 'sitting', label: 'Väčšinou sedím', hint: 'Kancelária, škola, šoférovanie.' },
+  { value: 'standing', label: 'Veľa chodím alebo stojím', hint: 'Obchod, čašník, sklad.' },
+  { value: 'physical', label: 'Fyzická práca', hint: 'Stavba, ťažká manuálna práca.' },
+]
+
+// „Chcem to rozpísať“: koľkokrát do týždňa fitko a iný šport a aká práca – aktivitu vypočíta appka.
+function ActivityDetail({ answers, onNext }: { answers: Partial<Answers>; onNext: (values: Partial<Answers>) => void }) {
+  const [gym, setGym] = useState(answers.gymPerWeek ?? 0)
+  const [sport, setSport] = useState(answers.sportPerWeek ?? 0)
+  const [job, setJob] = useState(answers.job)
+  const activity = job && activityFromDetail(gym, sport, job)
+
+  return (
+    <>
+      <header>
+        <h1 className="flow__title">Rozpíš, ako sa hýbeš</h1>
+        <p className="flow__lead">Appka z toho sama vypočíta tvoju aktivitu.</p>
+      </header>
+
+      <section className="detail">
+        <h2 className="detail__heading">Koľkokrát do týždňa?</h2>
+        <div className="card adjust">
+          <Stepper label="Fitko" display={`${gym}×`} value={gym} step={1} min={0} max={14} onChange={setGym} />
+          <Stepper label="Iný šport" display={`${sport}×`} value={sport} step={1} min={0} max={14} onChange={setSport} />
+        </div>
+      </section>
+
+      <section className="detail">
+        <h2 className="detail__heading">Práca alebo škola</h2>
+        <div className="choices">
+          {JOBS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={option.value === job ? 'choice choice--selected' : 'choice'}
+              onClick={() => setJob(option.value)}
+            >
+              <span className="choice__label">{option.label}</span>
+              <span className="choice__hint">{option.hint}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <div className="flow__bottom">
+        {activity && (
+          <p className="detail__result">
+            Vychádza ti: <b>{ACTIVITY_LABELS[activity]}</b>
+          </p>
+        )}
+        <button
+          type="button"
+          className="button button--primary"
+          disabled={!activity}
+          onClick={() => activity && onNext({ activity, gymPerWeek: gym, sportPerWeek: sport, job })}
+        >
+          Pokračovať
+        </button>
+      </div>
+    </>
+  )
+}
+
 const EXPLANATION: Record<Goal, string> = {
   lose: 'Keď zješ o trochu menej, budeš chudnúť pomaly a bezpečne.',
   recomp: 'Zješ len o máličko menej – tuk pôjde dole a s tréningom pribudnú svaly.',
@@ -301,7 +380,7 @@ function Result(props: {
         <div className="card adjust">
           <Stepper
             label="Kalórie"
-            unit="kcal"
+            display={`${kcal.toLocaleString('sk')} kcal`}
             value={kcal}
             step={50}
             min={result.minKcal}
@@ -310,7 +389,7 @@ function Result(props: {
           />
           <Stepper
             label="Bielkoviny"
-            unit="g"
+            display={`${targets.proteinG} g`}
             value={targets.proteinG}
             step={5}
             min={MIN_PROTEIN}
@@ -341,14 +420,14 @@ function Result(props: {
 
 function Stepper(props: {
   label: string
-  unit: string
+  display: string
   value: number
   step: number
   min: number
   max: number
   onChange: (value: number) => void
 }) {
-  const { label, unit, value, step, min, max, onChange } = props
+  const { label, display, value, step, min, max, onChange } = props
   return (
     <div className="stepper">
       <span className="stepper__label">{label}</span>
@@ -361,9 +440,7 @@ function Stepper(props: {
       >
         <Minus size={20} aria-hidden="true" />
       </button>
-      <span className="stepper__value">
-        {value.toLocaleString('sk')} {unit}
-      </span>
+      <span className="stepper__value">{display}</span>
       <button
         type="button"
         className="stepper__button"

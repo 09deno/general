@@ -1,8 +1,9 @@
 import { supabase } from './supabase'
 
 export type Sex = 'male' | 'female'
-export type Activity = 'none' | 'low' | 'medium' | 'high'
+export type Activity = 'none' | 'low' | 'medium' | 'high' | 'very_high'
 export type Goal = 'lose' | 'recomp' | 'maintain' | 'gain'
+export type Job = 'sitting' | 'standing' | 'physical'
 
 export type Answers = {
   sex: Sex
@@ -11,6 +12,10 @@ export type Answers = {
   weightKg: number
   activity: Activity
   goal: Goal
+  // len ak si aktivitu rozpísal: koľkokrát do týždňa fitko, iný šport a aká práca
+  gymPerWeek?: number
+  sportPerWeek?: number
+  job?: Job
 }
 
 export type Targets = { kcal: number; proteinG: number; carbsG: number; fatG: number }
@@ -27,6 +32,9 @@ export type GoalsRow = {
   protein_g: number
   carbs_g: number
   fat_g: number
+  gym_per_week: number | null
+  sport_per_week: number | null
+  job: Job | null
 }
 
 export const GOAL_LABELS: Record<Goal, string> = {
@@ -36,8 +44,25 @@ export const GOAL_LABELS: Record<Goal, string> = {
   gain: 'Nabrať svaly',
 }
 
-// koľkokrát viac kalórií spáli za deň, než v pokoji – podľa toho, ako často športuje
-const ACTIVITY_FACTOR: Record<Activity, number> = { none: 1.2, low: 1.375, medium: 1.55, high: 1.725 }
+export const ACTIVITY_LABELS: Record<Activity, string> = {
+  none: 'skoro žiadna aktivita',
+  low: 'mierna aktivita',
+  medium: 'stredná aktivita',
+  high: 'vysoká aktivita',
+  very_high: 'veľmi vysoká aktivita',
+}
+
+// koľkokrát viac kalórií spáli za deň, než v pokoji – podľa toho, ako sa hýbe
+const ACTIVITY_FACTOR: Record<Activity, number> = {
+  none: 1.2,
+  low: 1.375,
+  medium: 1.55,
+  high: 1.725,
+  very_high: 1.9,
+}
+const ACTIVITY_LEVELS: Activity[] = ['none', 'low', 'medium', 'high', 'very_high']
+// chodenie alebo státie v práci pridá jeden stupeň aktivity, fyzická práca dva
+const JOB_BONUS: Record<Job, number> = { sitting: 0, standing: 1, physical: 2 }
 // o koľko zje menej / viac, než denne spáli
 const GOAL_CHANGE: Record<Goal, number> = { lose: -0.15, recomp: -0.05, maintain: 0, gain: 0.1 }
 // gramy bielkovín na kg váhy
@@ -50,6 +75,14 @@ const FAT_SHARE = 0.25
 const MAX_PROTEIN_SHARE = 0.4
 
 const roundTo = (value: number, step: number) => Math.round(value / step) * step
+
+// Rozpísaná aktivita: tréningy do týždňa (fitko + iný šport) určia stupeň ako pri bežných
+// možnostiach (0 / 1–2 / 3–4 / 5+), práca ho ešte zvýši.
+export function activityFromDetail(gymPerWeek: number, sportPerWeek: number, job: Job): Activity {
+  const sessions = gymPerWeek + sportPerWeek
+  const fromTraining = sessions === 0 ? 0 : sessions <= 2 ? 1 : sessions <= 4 ? 2 : 3
+  return ACTIVITY_LEVELS[Math.min(ACTIVITY_LEVELS.length - 1, fromTraining + JOB_BONUS[job])]
+}
 
 export function calculate(answers: Answers) {
   const { sex, age, heightCm, weightKg, activity, goal } = answers
@@ -87,6 +120,9 @@ export function answersFromRow(row: GoalsRow): Answers {
     weightKg: row.weight_kg,
     activity: row.activity,
     goal: row.goal,
+    gymPerWeek: row.gym_per_week ?? undefined,
+    sportPerWeek: row.sport_per_week ?? undefined,
+    job: row.job ?? undefined,
   }
 }
 
@@ -97,7 +133,7 @@ export function targetsFromRow(row: GoalsRow): Targets {
 export async function loadGoals(userId: string): Promise<GoalsRow | null> {
   const { data, error } = await supabase
     .from('goals')
-    .select('sex, birth_year, height_cm, weight_kg, activity, goal, kcal, protein_g, carbs_g, fat_g')
+    .select('sex, birth_year, height_cm, weight_kg, activity, goal, kcal, protein_g, carbs_g, fat_g, gym_per_week, sport_per_week, job')
     .eq('user_id', userId)
     .maybeSingle()
   if (error) throw error
@@ -117,6 +153,9 @@ export async function saveGoals(userId: string, answers: Answers, targets: Targe
     protein_g: targets.proteinG,
     carbs_g: targets.carbsG,
     fat_g: targets.fatG,
+    gym_per_week: answers.gymPerWeek ?? null,
+    sport_per_week: answers.sportPerWeek ?? null,
+    job: answers.job ?? null,
   }
   const { error } = await supabase
     .from('goals')
