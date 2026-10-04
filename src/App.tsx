@@ -6,6 +6,7 @@ import Food from './components/Food'
 import InstallGuide from './components/InstallGuide'
 import Login from './components/Login'
 import Onboarding from './components/Onboarding'
+import RecipeEditor from './components/RecipeEditor'
 import Screen from './components/Screen'
 import Settings from './components/Settings'
 import Training from './components/Training'
@@ -73,6 +74,8 @@ function SignedIn({ userId }: { userId: string }) {
             />
           ))}
           <Route path="/jedlo/pridat" element={<AddFood />} />
+          <Route path="/jedlo/recepty/novy" element={<RecipeEditor />} />
+          <Route path="/jedlo/recepty/:id" element={<RecipeEditor />} />
           <Route path="/trening/plan" element={<TrainingPlan />} />
           <Route path="/trening/zapis/:id" element={<WorkoutLog />} />
           <Route path="*" element={<Navigate to="/jedlo" replace />} />

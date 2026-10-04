@@ -418,7 +418,7 @@ function Result(props: {
   )
 }
 
-function Stepper(props: {
+export function Stepper(props: {
   label: string
   display: string
   value: number

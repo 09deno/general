@@ -21,17 +21,19 @@ import {
   type NewFoodEntry,
 } from '../lib/food'
 import { findProduct, saveProduct } from '../lib/products'
+import { loadRecipes, PORTION_CHOICES, portionLabel, recipeEntry, recipeTotal, type Recipe } from '../lib/recipes'
 import BarcodeScanner from './BarcodeScanner'
 
 // prázdne políčko = 0, čiarka aj bodka ako desatinná čiarka
-const parseNumber = (text: string) => (text.trim() === '' ? 0 : Number(text.trim().replace(',', '.')))
-const amount = (value: number) => value.toLocaleString('sk', { maximumFractionDigits: 1 })
-const validAmount = (grams: number) => Number.isFinite(grams) && grams >= 1 && grams <= 5000
-const defaultAmount = (food: Food) => String(food.portions[0]?.grams ?? 100)
+export const parseNumber = (text: string) => (text.trim() === '' ? 0 : Number(text.trim().replace(',', '.')))
+export const amount = (value: number) => value.toLocaleString('sk', { maximumFractionDigits: 1 })
+export const validAmount = (grams: number) => Number.isFinite(grams) && grams >= 1 && grams <= 5000
+export const defaultAmount = (food: Food) => String(food.portions[0]?.grams ?? 100)
 
-type EntryData = Omit<NewFoodEntry, 'day' | 'meal'>
+export type EntryData = Omit<NewFoodEntry, 'day' | 'meal'>
 // časť jedla – základ alebo prísada; množstvo ako text z políčka
-type Part = { food: Food; grams: string }
+export type Part = { food: Food; grams: string }
+type Values = { kcal: number; protein: number; carbs: number; fat: number }
 // výber v menu: veľkosť (príloha + nápoj), ktorý nápoj a ktoré omáčky
 type MenuChoice = { size: number; drink: number; sauces: number[] }
 const DEFAULT_CHOICE: MenuChoice = { size: 0, drink: 0, sauces: [] }
@@ -89,6 +91,9 @@ export default function AddFood() {
   const [history, setHistory] = useState<HistoryItem[]>([])
   // čo si mal naposledy na každé jedlo dňa – dá sa zopakovať
   const [lastMeals, setLastMeals] = useState<Partial<Record<Meal, LastMeal>>>({})
+  // vlastné recepty a uložené jedlá; zvolený recept a koľko porcií
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [recipe, setRecipe] = useState<{ recipe: Recipe; count: number } | null>(null)
   // čiarový kód: skenovanie, hľadanie výrobku, alebo neznámy výrobok na zadanie z obalu
   const [scanning, setScanning] = useState(false)
   const [lookup, setLookup] = useState<{ code: string; status: 'loading' | 'unknown' | 'error'; name?: string } | null>(null)
@@ -104,6 +109,11 @@ export default function AddFood() {
       .then((meals) => active && setLastMeals(meals))
       .catch(() => {
         // bez minulých jedál sa dá jedlo stále vyhľadať
+      })
+    loadRecipes()
+      .then((items) => active && setRecipes(items))
+      .catch(() => {
+        // bez receptov sa dá jedlo stále vyhľadať
       })
     return () => {
       active = false
@@ -121,7 +131,8 @@ export default function AddFood() {
     else if (base) {
       setBase(null)
       setExtras([])
-    } else if (manual) setManual(false)
+    } else if (recipe) setRecipe(null)
+    else if (manual) setManual(false)
     else close()
   }
 
@@ -230,9 +241,11 @@ export default function AddFood() {
       : adding.food.name
     : base
       ? base.food.name
-      : manual
-        ? 'Zadať ručne'
-        : 'Pridať jedlo'
+      : recipe
+        ? recipe.recipe.name
+        : manual
+          ? 'Zadať ručne'
+          : 'Pridať jedlo'
 
   return (
     <section className="screen">
@@ -362,6 +375,50 @@ export default function AddFood() {
               {busy ? 'Ukladám…' : 'Pridať'}
             </button>
           </>
+        ) : recipe ? (
+          <>
+            <div className="add-food__group">
+              <span className="add-food__label">Koľko si zjedol?</span>
+              <div className="chips">
+                {PORTION_CHOICES.map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    className={count === recipe.count ? 'chip chip--selected' : 'chip'}
+                    onClick={() => setRecipe({ ...recipe, count })}
+                  >
+                    {portionLabel(count)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <ValuesCard values={entryValues(recipeEntry(recipe.recipe, recipe.count))} />
+            <p className="search__hint">
+              {recipe.recipe.portions === 1
+                ? `Uložené jedlo: ${recipe.recipe.items.map((item) => item.name).join(', ')}.`
+                : `Recept na ${portionLabel(recipe.recipe.portions)} · celý ${recipeTotal(recipe.recipe.items).kcal.toLocaleString('sk')} kcal.`}
+            </p>
+            {error && (
+              <p className="flow__message flow__message--error" role="alert">
+                {error}
+              </p>
+            )}
+            <button
+              type="button"
+              className="button button--primary"
+              disabled={busy}
+              onClick={() => save(recipeEntry(recipe.recipe, recipe.count))}
+            >
+              {busy ? 'Ukladám…' : 'Pridať'}
+            </button>
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => navigate(`/jedlo/recepty/${recipe.recipe.id}${day === today() ? '' : `?den=${day}`}`)}
+            >
+              Upraviť recept
+            </button>
+          </>
         ) : manual ? (
           <ManualForm busy={busy} error={error} onError={setError} onSave={save} />
         ) : (
@@ -377,6 +434,9 @@ export default function AddFood() {
               places
               history={history}
               busy={busy}
+              recipes={recipes}
+              onPickRecipe={(item) => setRecipe({ recipe: item, count: 1 })}
+              onNewRecipe={() => navigate(`/jedlo/recepty/novy${day === today() ? '' : `?den=${day}`}`)}
               top={
                 lastMeals[meal] && (
                   // key: pri inom jedle začína výber znova so všetkým zaškrtnutým
@@ -516,7 +576,7 @@ function NewProductForm(props: { code: string; initialName: string; onSaved: (fo
 // podniky v Banskej Bystrici, kam chodí partia – ťuknutím sa ukážu ich jedlá
 const PLACES = ['Wakaka', 'KFC', "McDonald's", 'Leviathan']
 
-function FoodSearch(props: {
+export function FoodSearch(props: {
   placeholder: string
   hint?: string
   places?: boolean
@@ -524,6 +584,10 @@ function FoodSearch(props: {
   busy?: boolean
   // nad „Často ješ“, kým sa nič nehľadá
   top?: ReactNode
+  // vlastné recepty a uložené jedlá
+  recipes?: Recipe[]
+  onPickRecipe?: (recipe: Recipe) => void
+  onNewRecipe?: () => void
   onQuickAdd?: (item: HistoryItem) => void
   onScan?: () => void
   onPick: (food: Food) => void
@@ -532,6 +596,26 @@ function FoodSearch(props: {
   const results = searchFoods(query)
   const history = props.history ?? []
   const mine = history.filter((item) => matchesQuery(item.name, query)).slice(0, 5)
+  const recipes = props.recipes ?? []
+  const myRecipes = recipes.filter((recipe) => matchesQuery(recipe.name, query))
+
+  const recipeList = (items: Recipe[]) => (
+    <ul className="results">
+      {items.map((recipe) => (
+        <li key={recipe.id}>
+          <button type="button" className="result" onClick={() => props.onPickRecipe?.(recipe)}>
+            <span className="result__text">
+              <span className="result__name">{recipe.name}</span>
+              <span className="result__info">
+                {recipe.portions === 1 ? 'uložené jedlo' : '1 porcia'} · {recipeEntry(recipe, 1).kcal.toLocaleString('sk')} kcal
+              </span>
+            </span>
+            <ChevronRight size={20} aria-hidden="true" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
 
   const historyList = (items: HistoryItem[]) => (
     <ul className="results">
@@ -583,6 +667,16 @@ function FoodSearch(props: {
       {query.trim() === '' ? (
         <>
           {props.top}
+          {props.onNewRecipe && (
+            <div className="add-food__group">
+              <span className="add-food__label">Tvoje recepty a uložené jedlá</span>
+              {recipes.length > 0 && recipeList(recipes)}
+              <button type="button" className="add-extra" onClick={props.onNewRecipe}>
+                <Plus size={18} aria-hidden="true" />
+                Nový recept
+              </button>
+            </div>
+          )}
           {history.length > 0 && (
             <div className="add-food__group">
               <span className="add-food__label">Často ješ – pridáš jedným ťuknutím</span>
@@ -603,10 +697,16 @@ function FoodSearch(props: {
             </div>
           )}
         </>
-      ) : results.length === 0 && mine.length === 0 ? (
+      ) : results.length === 0 && mine.length === 0 && myRecipes.length === 0 ? (
         <p className="search__hint">Nič sa nenašlo. Skús iné slovo.</p>
       ) : (
         <>
+          {myRecipes.length > 0 && (
+            <div className="add-food__group">
+              <span className="add-food__label">Tvoje recepty</span>
+              {recipeList(myRecipes)}
+            </div>
+          )}
           {mine.length > 0 && (
             <div className="add-food__group">
               <span className="add-food__label">Tvoje jedlá – jedným ťuknutím</span>
@@ -763,7 +863,7 @@ function MenuPicker({ menu, choice, onChange }: { menu: Menu; choice: MenuChoice
 }
 
 // Množstvo: rýchle tlačidlá (1 ks, 1 porcia, 100 g) alebo vlastné gramy.
-function AmountPicker({ part, onChange }: { part: Part; onChange: (grams: string) => void }) {
+export function AmountPicker({ part, onChange }: { part: Part; onChange: (grams: string) => void }) {
   const { food } = part
   const quick = [...food.portions, { label: `100 ${food.unit}`, grams: 100 }]
   const grams = parseNumber(part.grams)
@@ -804,8 +904,19 @@ function AmountPicker({ part, onChange }: { part: Part; onChange: (grams: string
   )
 }
 
-function NutritionCard({ parts }: { parts: Part[] }) {
-  const values = total(parts)
+export function NutritionCard({ parts }: { parts: Part[] }) {
+  return <ValuesCard values={total(parts)} />
+}
+
+// hodnoty uloženého záznamu (napr. porcie receptu) pre kartu so živinami
+const entryValues = (entry: EntryData): Values => ({
+  kcal: entry.kcal,
+  protein: entry.protein_g,
+  carbs: entry.carbs_g,
+  fat: entry.fat_g,
+})
+
+export function ValuesCard({ values }: { values: Values }) {
   return (
     <div className="card card--glow portion">
       <p className="portion__kcal">
@@ -829,12 +940,14 @@ function NutritionCard({ parts }: { parts: Part[] }) {
   )
 }
 
-// Ručné zadanie, keď sa jedlo v zozname nenájde.
-function ManualForm(props: {
+// Ručné zadanie, keď sa jedlo v zozname nenájde (aj surovina receptu).
+export function ManualForm(props: {
   busy: boolean
   error: string
   onError: (message: string) => void
   onSave: (data: EntryData) => void
+  // pri surovine receptu iné nápisy
+  ingredient?: boolean
 }) {
   const { busy, error, onError, onSave } = props
   const [name, setName] = useState('')
@@ -847,7 +960,7 @@ function ManualForm(props: {
     event.preventDefault()
     const kcalValue = parseNumber(kcal)
     const macros = [protein, carbs, fat].map(parseNumber)
-    if (!name.trim()) return onError('Napíš, čo si jedol.')
+    if (!name.trim()) return onError(props.ingredient ? 'Napíš názov suroviny.' : 'Napíš, čo si jedol.')
     if (!kcal.trim() || !Number.isInteger(kcalValue) || kcalValue < 0 || kcalValue > 5000) {
       return onError('Zadaj kalórie – celé číslo od 0 do 5 000.')
     }
@@ -868,13 +981,13 @@ function ManualForm(props: {
   return (
     <form className="add-food" onSubmit={submit}>
       <label className="add-food__group">
-        <span className="add-food__label">Čo si jedol?</span>
+        <span className="add-food__label">{props.ingredient ? 'Surovina' : 'Čo si jedol?'}</span>
         <input
           className="field"
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="napr. Kuracie prsia s ryžou"
+          placeholder={props.ingredient ? 'napr. Koreňová zelenina 300 g' : 'napr. Kuracie prsia s ryžou'}
           maxLength={100}
           autoComplete="off"
         />
@@ -910,7 +1023,7 @@ function ManualForm(props: {
         </p>
       )}
       <button type="submit" className="button button--primary" disabled={busy}>
-        {busy ? 'Ukladám…' : 'Pridať'}
+        {busy ? 'Ukladám…' : props.ingredient ? 'Pridať surovinu' : 'Pridať'}
       </button>
     </form>
   )

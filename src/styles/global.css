@@ -355,13 +355,42 @@ a {
 
 .meal__heading {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
   margin: 0 4px 8px;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
+}
+
+.meal__heading > span:first-child {
+  flex: 1;
+}
+
+/* „Uložiť“ – jedlo sa uloží pod názvom ako recept */
+.meal__save {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  margin-right: -6px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--violet-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.meal__name {
+  display: grid;
+  grid-template-columns: 1fr 44px auto;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
 }
 
 .meal__list {
