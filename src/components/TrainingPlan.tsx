@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Check, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Check, Info, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
+import { GUIDES } from '../data/exerciseGuides'
 import { EXERCISES, GROUP_LABELS, GROUPS, KINDS, searchExercises, type Exercise, type ExerciseKind, type MuscleGroup } from '../data/exercises'
 import {
   addCustomExercise,
@@ -16,6 +17,7 @@ import {
   type Plan,
   type PlanDay,
 } from '../lib/training'
+import { ExercisePhoto, HowTo } from './ExerciseGuide'
 
 // „1 cvik“, „3 cviky“, „5 cvikov“
 export const exerciseCount = (count: number) =>
@@ -413,6 +415,8 @@ function ExercisePicker(props: {
   const { day, custom } = props
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
+  // cvik, pri ktorom je rozbalená fotka a návod
+  const [showing, setShowing] = useState<string | null>(null)
   const { items: found, exact } = searchExercises([...EXERCISES, ...custom], query)
 
   return (
@@ -476,7 +480,7 @@ function ExercisePicker(props: {
                     {items.map((exercise) => {
                       const added = day.exercises.includes(exercise.key)
                       return (
-                        <li key={exercise.key}>
+                        <li key={exercise.key} className="result-row">
                           <button
                             type="button"
                             className={added ? 'result result--added' : 'result'}
@@ -496,6 +500,23 @@ function ExercisePicker(props: {
                               <Plus size={20} aria-hidden="true" />
                             )}
                           </button>
+                          {GUIDES[exercise.key] && (
+                            <button
+                              type="button"
+                              className={showing === exercise.key ? 'result-row__info result-row__info--open' : 'result-row__info'}
+                              onClick={() => setShowing(showing === exercise.key ? null : exercise.key)}
+                              aria-expanded={showing === exercise.key}
+                              aria-label={`Ako sa robí ${exercise.name}`}
+                            >
+                              <Info size={20} aria-hidden="true" />
+                            </button>
+                          )}
+                          {showing === exercise.key && (
+                            <div className="result-row__guide">
+                              <ExercisePhoto exerciseKey={exercise.key} name={exercise.name} large />
+                              <HowTo exerciseKey={exercise.key} />
+                            </div>
+                          )}
                         </li>
                       )
                     })}

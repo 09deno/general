@@ -1013,6 +1013,135 @@ a {
   color: var(--text-muted);
 }
 
+/* názov cviku vľavo, fotka vpravo */
+.workout-exercise__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.workout-exercise__head .workout-exercise__title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* fotka cviku – začiatok a koniec pohybu sa striedajú */
+.exercise-photo {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 120px;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.exercise-photo--large {
+  width: 100%;
+}
+
+.exercise-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.exercise-photo__end {
+  animation: exercise-move 2.4s ease-in-out infinite;
+}
+
+@keyframes exercise-move {
+  0%,
+  35% {
+    opacity: 0;
+  }
+  50%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exercise-photo__end {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* „Ako na to?“ – návod sa rozbalí po ťuknutí */
+.how-to {
+  margin: -6px 4px -4px;
+}
+
+.how-to__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--violet-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.how-to__chevron {
+  transition: transform 0.2s ease;
+}
+
+.how-to__chevron--open {
+  transform: rotate(180deg);
+}
+
+.how-to__steps {
+  display: grid;
+  gap: 6px;
+  margin: 2px 0 6px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* riadok vo výbere cvikov: cvik + ikonka s fotkou a návodom */
+.result-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background: var(--surface);
+}
+
+.result-row__info {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  border: 0;
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.result-row__info--open {
+  color: var(--violet-ink);
+}
+
+.result-row__guide {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 8px;
+  padding: 0 16px 12px;
+}
+
+.result-row__guide .how-to {
+  margin: 0;
+}
+
 /* cvik 3 tréningy po sebe nešiel hore */
 .workout-exercise__tip {
   display: flex;
