@@ -29,6 +29,14 @@ export default defineConfig({
         // úvodné obrazovky iPhonu sa do telefónu neukladajú – stiahnu sa len pri pridaní na plochu
         globPatterns: ['**/*.{js,css,html,woff2,svg}', 'icons/*.png', 'apple-touch-icon.png'],
         navigateFallback: '/index.html',
+        // fotky cvikov (~3 MB) sa nesťahujú vopred – uložia sa, až keď sa prvýkrát ukážu
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/exercises/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'exercise-photos', expiration: { maxEntries: 300 } },
+          },
+        ],
       },
     }),
   ],

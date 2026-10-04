@@ -16,6 +16,7 @@ import {
   type WorkoutExercise,
   type WorkoutSet,
 } from '../lib/workouts'
+import { ExercisePhoto, HowTo } from './ExerciseGuide'
 
 // Políčka sa píšu ako text („22,5“), číslo sa z nich spraví až pri ukladaní.
 type DraftSet = { kg: string; reps: string; seconds: string; done: boolean }
@@ -242,10 +243,14 @@ function ExerciseSets(props: {
 
   return (
     <section className="card plan-day">
-      <div className="workout-exercise__title">
-        <h2 className="plan-day__name">{exercise.name}</h2>
-        <span className="plan-exercise__group">{GROUP_LABELS[exercise.group]}</span>
+      <div className="workout-exercise__head">
+        <div className="workout-exercise__title">
+          <h2 className="plan-day__name">{exercise.name}</h2>
+          <span className="plan-exercise__group">{GROUP_LABELS[exercise.group]}</span>
+        </div>
+        <ExercisePhoto exerciseKey={exercise.key} name={exercise.name} />
       </div>
+      <HowTo exerciseKey={exercise.key} />
       {last && (
         <p className="workout-exercise__last">
           Minule ({dayLabel(last.day)}): {last.sets.map((set) => setLabel(kind, set)).join(' · ')}
